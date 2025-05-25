@@ -685,6 +685,176 @@
     color: var(--primary-color);
   }
 
+  /* NEW STYLING FOR GAME DETAILS (made smaller) */
+  .game-details-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Adjusted min-width */
+    gap: 10px; /* Reduced gap */
+    margin-top: 20px; /* Reduced margin */
+    padding: 15px; /* Reduced padding */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #fbfbfc;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.03);
+  }
+
+  .game-detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px; /* Reduced padding */
+    border: 1px solid #e9e9e9;
+    border-radius: 8px;
+    background-color: var(--light-color);
+    box-shadow: var(--shadow-light);
+    transition: transform 0.2s ease;
+  }
+
+  .game-detail-item:hover {
+    transform: translateY(-2px);
+  }
+
+  .game-detail-item strong {
+    font-size: 14px; /* Smaller font */
+    color: var(--primary-color);
+    margin-bottom: 4px; /* Reduced margin */
+  }
+
+  .game-detail-item span {
+    font-size: 20px; /* Smaller font */
+    font-weight: bold;
+    color: var(--secondary-color);
+  }
+
+  .inning-status-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px; /* Smaller font */
+    color: var(--primary-color);
+  }
+  .inning-status-item .status-text {
+    font-size: 24px; /* Smaller font */
+    color: var(--secondary-color);
+    margin-bottom: 4px; /* Reduced margin */
+  }
+
+  .inning-control-buttons {
+    display: flex;
+    gap: 8px; /* Reduced gap */
+    margin-top: 8px; /* Reduced margin */
+  }
+
+  .inning-control-buttons button {
+    padding: 6px 10px; /* Reduced padding */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    box-shadow: var(--shadow-light);
+    font-size: 12px; /* Smaller font */
+  }
+
+  .inning-control-buttons .toggle-inning-btn {
+    background-color: var(--info-color);
+    color: white;
+  }
+
+  .inning-control-buttons .toggle-inning-btn:hover {
+    background-color: #1976d2;
+  }
+
+  .inning-control-buttons .reset-outs-btn {
+    background-color: var(--warning-color);
+    color: #333;
+  }
+
+  .inning-control-buttons .reset-outs-btn:hover {
+    background-color: #fbc02d;
+  }
+
+  .bases-display {
+    display: flex;
+    gap: 4px; /* Reduced gap */
+    margin-top: 8px; /* Reduced margin */
+    font-size: 12px; /* Smaller font */
+    font-weight: bold;
+    color: #666;
+  }
+  .bases-display .base {
+    width: 22px; /* Smaller size */
+    height: 22px; /* Smaller size */
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #eee;
+    color: #999;
+    font-size: 10px; /* Smaller text inside base */
+  }
+  .bases-display .base.occupied {
+    background-color: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+  }
+  .base-control-buttons {
+    display: flex;
+    gap: 6px; /* Reduced gap */
+    margin-top: 8px; /* Reduced margin */
+    flex-wrap: wrap;
+  }
+  .base-control-buttons button {
+    padding: 5px 9px; /* Reduced padding */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px; /* Smaller font */
+    transition: background-color 0.2s ease;
+    background-color: #5cb85c; /* Greenish for add */
+    color: white;
+    box-shadow: var(--shadow-light);
+  }
+  .base-control-buttons button:hover {
+    background-color: #4cae4c;
+  }
+  .base-control-buttons button.clear {
+    background-color: #f0ad4e; /* Orange for clear */
+  }
+  .base-control-buttons button.clear:hover {
+    background-color: #ec971f;
+  }
+
+
+  .toggle-details-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .toggle-details-btn:hover {
+    background-color: #303f9f;
+    transform: translateY(-2px);
+  }
+
+
+  /* For hidden content */
+  .hidden {
+    display: none !important;
+  }
+
+
   /* --- Responsive Design (Media Queries) --- */
 
   /* For Tablets and larger phones (e.g., 768px to 1024px) */
@@ -777,6 +947,34 @@
         height: 22px;
         font-size: 12px;
     }
+
+    /* Game details container adjustment */
+    .game-details-container {
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Adjusted min-width */
+      gap: 8px; /* Reduced gap */
+    }
+    .game-detail-item strong {
+        font-size: 13px; /* Even smaller */
+    }
+    .game-detail-item span {
+        font-size: 18px; /* Even smaller */
+    }
+    .inning-status-item {
+        font-size: 16px; /* Even smaller */
+    }
+    .inning-status-item .status-text {
+        font-size: 22px; /* Even smaller */
+    }
+    .inning-control-buttons button,
+    .base-control-buttons button {
+        padding: 5px 8px; /* Even smaller */
+        font-size: 11px; /* Even smaller */
+    }
+    .bases-display .base {
+        width: 20px; /* Even smaller */
+        height: 20px; /* Even smaller */
+        font-size: 9px; /* Even smaller */
+    }
   }
 
   /* For Mobile devices (e.g., up to 767px) */
@@ -856,7 +1054,7 @@
       gap: 3px;
     }
     .ining-container {
-      min-height: 100px; /* Reduced container height */
+      min-height: 100px;
     }
 
     th, td {
@@ -892,6 +1090,27 @@
     .registro-item {
       font-size: 13px;
       padding: 6px;
+    }
+
+    /* Game details container adjustment for small screens */
+    .game-details-container {
+      grid-template-columns: 1fr; /* Stack details vertically */
+      gap: 8px;
+    }
+    .game-detail-item strong {
+        font-size: 12px; /* Smallest */
+    }
+    .game-detail-item span {
+        font-size: 16px; /* Smallest */
+    }
+    .inning-status-item {
+        font-size: 14px; /* Smallest */
+    }
+    .inning-status-item .status-text {
+        font-size: 20px; /* Smallest */
+    }
+    .inning-control-buttons, .base-control-buttons {
+      justify-content: center;
     }
   }
 
@@ -1020,15 +1239,75 @@
       </table>
     </div>
     <button class="inning-extra-btn" onclick="agregarInning()"><i class="fas fa-plus"></i> Agregar Inning Extra</button>
+
+    <button class="toggle-details-btn" onclick="toggleGameDetails()"><i class="fas fa-cog"></i> Mostrar Detalles Adicionales</button>
+
+    <div class="game-details-container hidden" id="game-details-container">
+        <div class="game-detail-item inning-status-item">
+            <strong>Inning Actual</strong>
+            <span class="status-text" id="current-inning-status">Top 1</span>
+            <div class="inning-control-buttons">
+                <button class="toggle-inning-btn" onclick="toggleTopDown()"><i class="fas fa-arrows-alt-v"></i> Cambiar Parte</button>
+            </div>
+        </div>
+
+        <div class="game-detail-item">
+            <strong>Outs</strong>
+            <span id="outs-display">0</span>
+            <div class="inning-control-buttons">
+                <button onclick="addOut()"><i class="fas fa-plus"></i> Out</button>
+                <button class="reset-outs-btn" onclick="resetOuts()"><i class="fas fa-undo"></i> Reset</button>
+            </div>
+        </div>
+        
+        <div class="game-detail-item">
+            <strong>Bases Ocupadas</strong>
+            <div class="bases-display">
+                <div class="base" id="base1">1B</div>
+                <div class="base" id="base2">2B</div>
+                <div class="base" id="base3">3B</div>
+            </div>
+            <div class="base-control-buttons">
+                <button onclick="toggleBase(1)">1B</button>
+                <button onclick="toggleBase(2)">2B</button>
+                <button onclick="toggleBase(3)">3B</button>
+                <button class="clear" onclick="clearBases()">Limpiar</button>
+            </div>
+        </div>
+
+        <div class="game-detail-item">
+            <strong>Hits (H)</strong>
+            <span>Local: <span id="local-hits">0</span></span>
+            <span>Visitante: <span id="visitante-hits">0</span></span>
+        </div>
+
+        <div class="game-detail-item">
+            <strong>Errores (E)</strong>
+            <span>Local: <span id="local-errors">0</span></span>
+            <span>Visitante: <span id="visitante-errors">0</span></span>
+        </div>
+        
+        <div class="game-detail-item">
+            <strong>Jonrones (HR)</strong>
+            <span>Local: <span id="local-hr">0</span></span>
+            <span>Visitante: <span id="visitante-hr">0</span></span>
+        </div>
+
+        <div class="game-detail-item">
+            <strong>Ponches (K)</strong>
+            <span>Local: <span id="local-k">0</span></span>
+            <span>Visitante: <span id="visitante-k">0</span></span>
+        </div>
+    </div>
   </div>
 
   <div class="section-container">
     <div class="lineup-header-container">
       <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-local-name" placeholder="Nombre local" onchange="actualizarNombreEquipoLineup('local')" /></h2>
       <div class="inning-navigation">
-        <button onclick="showPrevInning('lineup-local')"><i class="fas fa-chevron-left"></i></button>
-        <span class="current-inning-display" id="current-inning-local">Inning 1</span>
-        <button onclick="showNextInning('lineup-local')"><i class="fas fa-chevron-right"></i></button>
+        <button onclick="showPrevInning()"><i class="fas fa-chevron-left"></i></button>
+        <span class="current-inning-display" id="current-inning-display">Inning 1</span>
+        <button onclick="showNextInning()"><i class="fas fa-chevron-right"></i></button>
       </div>
     </div>
     <div class="table-wrapper">
@@ -1050,11 +1329,8 @@
   <div class="section-container">
     <div class="lineup-header-container">
       <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-visitante-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoLineup('visitante')" /></h2>
-      <div class="inning-navigation">
-        <button onclick="showPrevInning('lineup-visitante')"><i class="fas fa-chevron-left"></i></button>
-        <span class="current-inning-display" id="current-inning-visitante">Inning 1</span>
-        <button onclick="showNextInning('lineup-visitante')"><i class="fas fa-chevron-right"></i></button>
-      </div>
+      <div class="inning-navigation" style="display: none;">
+        </div>
     </div>
     <div class="table-wrapper">
       <table id="lineup-visitante">
@@ -1101,8 +1377,10 @@
     const posiciones = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
     let registrosJuego = [];
     let maxInnings = 9;
-    let currentInningLocal = 1; // Track current inning for local lineup
-    let currentInningVisitante = 1; // Track current inning for visitante lineup
+    let currentInning = 1; // Single variable for current inning, applied to both teams
+    let isTopInning = true; // True for visitors (Top), false for local (Down)
+    let outs = 0; // Current outs for the active half-inning
+    let bases = [false, false, false]; // [1st, 2nd, 3rd]
 
     let partidoData = {
       fecha: "",
@@ -1112,8 +1390,11 @@
       visitanteTeamName: "Visitante",
       registros: [],
       maxInnings: 9,
-      currentInningLocal: 1, // Add to partidoData
-      currentInningVisitante: 1 // Add to partidoData
+      currentInning: 1, // Update to single currentInning
+      isTopInning: true,
+      outs: 0, // Current outs
+      bases: [false, false, false],
+      showDetails: false // To control visibility of new details section
     };
 
     // Función para obtener las jugadas desde localStorage
@@ -1133,12 +1414,19 @@
     function inicializarDatosEjemplo() {
       if (!localStorage.getItem("jugadasData")) {
         const jugadasEjemplo = [
-          { jugada: "H", nombre: "H", descripcion: "Hit" },
+          { jugada: "H", nombre: "H", descripcion: "Hit (generico)" },
+          { jugada: "H1", nombre: "H1", descripcion: "Sencillo" },
+          { jugada: "H2", nombre: "H2", descripcion: "Doble" },
+          { jugada: "H3", nombre: "H3", descripcion: "Triple" },
+          { jugada: "HR", nombre: "HR", descripcion: "Home Run" },
           { jugada: "A", nombre: "A", descripcion: "Carrera Anotada" },
           { jugada: "CI", nombre: "CI", descripcion: "Carrera Impulsada" },
-          { jugada: "K", nombre: "K", descripcion: "Ponche" },
+          { jugada: "P", nombre: "P", descripcion: "Ponche" }, // Changed from K to P
           { jugada: "BB", nombre: "BB", descripcion: "Base por Bolas" },
-          { jugada: "E", nombre: "E", descripcion: "Error" }
+          { jugada: "E-D", nombre: "E-D", descripcion: "Error de Defensor" }, // Changed from E to E-D
+          { jugada: "O", nombre: "O", descripcion: "Out (generico)" },
+          { jugada: "AR", nombre: "AR", descripcion: "Out por Regla" },
+          { jugada: "FS", nombre: "FS", descripcion: "Foul Strike Out" }
         ];
         localStorage.setItem("jugadasData", JSON.stringify(jugadasEjemplo));
       }
@@ -1200,8 +1488,7 @@
       for (let i = 0; i < maxInnings; i++) {
         const inningNumber = i + 1;
         // Add inning-column class and active class based on current inning
-        const isActiveInning = (tablaId === 'lineup-local' && inningNumber === currentInningLocal) || 
-                               (tablaId === 'lineup-visitante' && inningNumber === currentInningVisitante);
+        const isActiveInning = (inningNumber === currentInning);
         celdasIning += `
           <td class="inning-column inning-${inningNumber} ${isActiveInning ? 'active' : ''}">
             <div class="ining-container">
@@ -1236,7 +1523,7 @@
 
         const rowToDelete = btn.closest("tr");
         const tbody = rowToDelete.parentElement;
-        const jugadorSelect = rowToDelete.querySelector(".jugador-select");
+        const jugadorSelect = row.querySelector(".jugador-select");
         const nombreJugadorEliminado = jugadorSelect ? jugadorSelect.value : "";
 
         // Remove the row from the table
@@ -1258,7 +1545,7 @@
         });
 
         actualizarRegistrosUI();
-        actualizarResumen(tablaId); // Recalculate totals for the affected team
+        actualizarResumenGlobal(); // Update all resumen stats
         guardarEstadoPartido(); // Save the new state
     }
 
@@ -1270,20 +1557,16 @@
       const label = container.querySelector(".ining-label");
       
       const jugada = select.value;
-      const cantidad = input.value;
+      const cantidad = parseInt(input.value); // Ensure quantity is a number
       
-      if (jugada) {
+      if (jugada && !isNaN(cantidad)) {
         if (label.textContent) {
           label.textContent += `+${cantidad}${jugada}`;
         } else {
           label.textContent = `${cantidad}${jugada}`;
         }
         
-        select.value = "";
-        input.value = "1";
-        
-        actualizarResumen(tablaId);
-        
+        // Save the raw jugada and quantity for easier parsing later
         const row = btn.closest("tr");
         const jugadorSelect = row.querySelector(".jugador-select");
         const posicionSelect = row.querySelector(".posicion-select");
@@ -1301,22 +1584,45 @@
           jugador: jugador,
           posicion: posicion,
           inning: inning,
-          jugada: jugada,
+          jugada: jugada, // Store the exact jugada code
           cantidad: cantidad,
           timestamp: new Date().toISOString()
         };
         
         registrosJuego.push(registro);
+
+        // --- INICIO DE LA LÍNEA MODIFICADA ---
+        // Auto-increment outs if specific plays are recorded (O, AR, FS, P)
+        if (['O', 'AR', 'FS', 'P'].includes(jugada)) { 
+            addOut(cantidad); // Increment outs by the recorded quantity
+        }
+        // --- FIN DE LA LÍNEA MODIFICADA ---
+        
+        // Reset select and input after saving
+        select.value = "";
+        input.value = "1";
+        
         actualizarRegistrosUI();
+        actualizarResumenGlobal(); // Update all resumen stats
         guardarEstadoPartido();
       } else {
-        alert("Por favor, seleccione una jugada");
+        alert("Por favor, seleccione una jugada y asegúrese de que la cantidad sea un número válido.");
       }
     }
 
-    function actualizarResumen(tablaId) {
-      const equipo = tablaId.includes("local") ? "local" : "visitante";
+    // New function to update all summary statistics
+    function actualizarResumenGlobal() {
+      actualizarResumenIndividual("local");
+      actualizarResumenIndividual("visitante");
+      actualizarEstadisticasAdicionales();
+    }
+
+    // Function to update individual team's runs
+    function actualizarResumenIndividual(equipo) {
+      const tablaId = `lineup-${equipo}`;
       const tabla = document.getElementById(tablaId);
+      if (!tabla) return; // Exit if table not found
+
       const tbody = tabla.querySelector("tbody");
       
       const sumasInnings = {};
@@ -1325,17 +1631,15 @@
       }
       
       tbody.querySelectorAll("tr").forEach(row => {
-        // Adjust index for player columns (#, Jugador, Posicion, Delete Button)
-        // Inning cells now start from index 4 (0,1,2,3 for static, 4 for 1st inning)
-        for (let i = 4; i < 4 + maxInnings; i++) { 
+        for (let i = 4; i < 4 + maxInnings; i++) { // Inning cells start from index 4
           const cell = row.cells[i];
           if (cell) {
             const label = cell.querySelector(".ining-label");
             if (label && label.textContent) {
-              const regex = /([+-]?\d+)A/g;
+              const regex = /([+-]?\d+)A/g; // Regex to find "XA" where X is a number
               let match;
               while ((match = regex.exec(label.textContent)) !== null) {
-                const inning = i - 3; // Inning number corresponds to column index - 3 (for #, Jugador, Posicion, Delete)
+                const inning = i - 3; 
                 sumasInnings[inning] += parseInt(match[1]);
               }
             }
@@ -1353,6 +1657,76 @@
       const total = Object.values(sumasInnings).reduce((sum, val) => sum + val, 0);
       document.getElementById(`${equipo}-total`).textContent = total;
     }
+
+    // New function to update additional statistics (Hits, Errors, HR, K)
+    function actualizarEstadisticasAdicionales() {
+        const localTeamName = document.getElementById("lineup-local-name").value || "Local";
+        const visitanteTeamName = document.getElementById("lineup-visitante-name").value || "Visitante";
+
+        let localHits = 0;
+        let visitanteHits = 0;
+        let localErrors = 0;
+        let visitanteErrors = 0;
+        let localHR = 0;
+        let visitanteHR = 0;
+        let localK = 0;
+        let visitanteK = 0;
+
+        registrosJuego.forEach(registro => {
+            const cantidad = parseInt(registro.cantidad);
+            if (isNaN(cantidad)) return;
+
+            // Determine if the record is for the local or visiting team
+            const isLocalTeam = registro.equipo === localTeamName;
+            const isVisitanteTeam = registro.equipo === visitanteTeamName;
+
+            // Count Hits (H1, H2, H3, HR)
+            if (['H1', 'H2', 'H3', 'HR'].includes(registro.jugada)) {
+                if (isLocalTeam) localHits += cantidad;
+                else if (isVisitanteTeam) visitanteHits += cantidad;
+            }
+            
+            // Count Home Runs (HR)
+            if (registro.jugada === "HR") {
+                if (isLocalTeam) localHR += cantidad;
+                else if (isVisitanteTeam) visitanteHR += cantidad;
+            }
+
+            // Count Ponches (P)
+            if (registro.jugada === "P") { // Using 'P' for Ponche
+                if (isLocalTeam) localK += cantidad;
+                else if (isVisitanteTeam) visitanteK += cantidad;
+            }
+
+            // Count Errors (E-D)
+            if (registro.jugada === "E-D") { // Using 'E-D' for Error
+                if (isLocalTeam) localErrors += cantidad;
+                else if (isVisitanteTeam) visitanteErrors += cantidad;
+            }
+        });
+
+        document.getElementById('local-hits').textContent = localHits;
+        document.getElementById('visitante-hits').textContent = visitanteHits;
+        document.getElementById('local-errors').textContent = localErrors;
+        document.getElementById('visitante-errors').textContent = visitanteErrors;
+        document.getElementById('local-hr').textContent = localHR;
+        document.getElementById('visitante-hr').textContent = visitanteHR;
+        document.getElementById('local-k').textContent = localK;
+        document.getElementById('visitante-k').textContent = visitanteK;
+
+        // Update current inning status
+        const inningStatusElement = document.getElementById('current-inning-status');
+        if (inningStatusElement) {
+            inningStatusElement.textContent = `${isTopInning ? 'Top' : 'Down'} ${currentInning}`;
+        }
+        
+        // Update outs display
+        document.getElementById('outs-display').textContent = outs;
+
+        // Update bases display
+        updateBasesDisplay();
+    }
+
 
     function actualizarNombreEquipoLineup(tipo) {
       const input = document.getElementById(`lineup-${tipo}-name`);
@@ -1381,7 +1755,7 @@
       registrosJuego.forEach(registro => {
         const registroElement = document.createElement("div");
         registroElement.className = "registro-item";
-        registroElement.textContent = `[${registro.timestamp.split('T')[1].substring(0, 8)}] ${registro.equipo} - ${registro.jugador} (${registro.posicion}): Inning ${registro.inning} - ${registro.cantidad}${registro.jugada}`;
+        registroElement.textContent = `[${new Date(registro.timestamp).toLocaleTimeString()}] ${registro.equipo} - ${registro.jugador} (${registro.posicion}): Inning ${registro.inning} - ${registro.cantidad}${registro.jugada}`;
         container.appendChild(registroElement);
       });
     }
@@ -1460,7 +1834,10 @@
     }
 
     function reconstruirDesdeRegistros() {
-      if (registrosJuego.length === 0) return;
+      if (registrosJuego.length === 0) {
+        reiniciarPartido(); // If no records, just reset the game
+        return;
+      }
       
       const primerRegistro = registrosJuego[0];
       document.getElementById("fecha").value = primerRegistro.fecha || "";
@@ -1526,8 +1903,7 @@
             const jugadasInning = datosJugador.innings[i] || [];
             const labelText = jugadasInning.map(j => `${j.cantidad}${j.jugada}`).join("+");
 
-            const currentInning = (tablaId === 'lineup-local' ? currentInningLocal : currentInningVisitante);
-            const isActiveInning = (i === currentInning);
+            const isActiveInning = (i === currentInning); // Use single currentInning
             
             celdasIning += `
               <td class="inning-column inning-${i} ${isActiveInning ? 'active' : ''}">
@@ -1560,11 +1936,8 @@
         }
       }
       
-      actualizarResumen("lineup-local");
-      actualizarResumen("lineup-visitante");
-      // Update inning display for both lineups
-      showInning('lineup-local', currentInningLocal);
-      showInning('lineup-visitante', currentInningVisitante);
+      actualizarResumenGlobal(); // Call the global update
+      showInning(currentInning); // Update inning display for both lineups
     }
 
     function reconstruirTablaResumen() {
@@ -1655,20 +2028,9 @@
             }
         });
         // Important: Update totals to 0 after resetting innings
-        const equipoTipo = tablaId.includes('local') ? 'local' : 'visitante';
-        document.getElementById(`${equipoTipo}-total`).textContent = '0';
-        for (let i = 1; i <= maxInnings; i++) {
-            const label = document.getElementById(`${equipoTipo}-${i}`);
-            if (label) {
-                label.textContent = '0';
-            }
-        }
-        // After rebuilding, ensure the current inning is displayed
-        if (tablaId === 'lineup-local') {
-          showInning('lineup-local', currentInningLocal);
-        } else {
-          showInning('lineup-visitante', currentInningVisitante);
-        }
+        actualizarResumenGlobal();
+        // After rebuilding, ensure the current inning is displayed for both
+        showInning(currentInning);
     }
 
     function agregarInning() {
@@ -1721,14 +2083,9 @@
           `;
           row.appendChild(nuevaCelda);
         });
-        // After adding a new inning, re-display the current inning to hide the new one
-        if (lineupId === 'lineup-local') {
-          showInning('lineup-local', currentInningLocal);
-        } else {
-          showInning('lineup-visitante', currentInningVisitante);
-        }
       });
-      
+      // After adding a new inning, ensure the current inning is still displayed for both
+      showInning(currentInning);
       guardarEstadoPartido();
     }
 
@@ -1747,8 +2104,10 @@
         
         // Resetear la cantidad máxima de innings a 9 y la inning actual a 1
         maxInnings = 9; 
-        currentInningLocal = 1;
-        currentInningVisitante = 1;
+        currentInning = 1;
+        isTopInning = true;
+        outs = 0; // Reset outs
+        bases = [false, false, false]; // Reset bases
         
         // Reconstruir la tabla de resumen con 9 innings y reiniciar sus totales
         reconstruirTablaResumen();
@@ -1760,6 +2119,9 @@
         // Limpiar registros del juego
         registrosJuego = [];
         document.getElementById("registros-container").innerHTML = "";
+        
+        // Actualizar el resumen global para reflejar el reinicio
+        actualizarResumenGlobal(); // This will reset all stats like hits, errors, HR, K
         
         // Guardar el estado "limpio" del partido
         guardarEstadoPartido();
@@ -1812,8 +2174,11 @@
         visitanteTeamName: document.getElementById("visitante-team-name").value,
         registros: registrosJuego,
         maxInnings: maxInnings,
-        currentInningLocal: currentInningLocal, // Save current inning
-        currentInningVisitante: currentInningVisitante, // Save current inning
+        currentInning: currentInning, // Save current inning
+        isTopInning: isTopInning, // Save top/down status
+        outs: outs, // Save outs
+        bases: bases, // Save bases
+        showDetails: document.getElementById('game-details-container').classList.contains('hidden') ? false : true,
         localLineup: localLineup, 
         visitanteLineup: visitanteLineup
       };
@@ -1827,8 +2192,10 @@
         partidoData = JSON.parse(savedData);
         registrosJuego = partidoData.registros || [];
         maxInnings = partidoData.maxInnings || 9;
-        currentInningLocal = partidoData.currentInningLocal || 1; // Load current inning
-        currentInningVisitante = partidoData.currentInningVisitante || 1; // Load current inning
+        currentInning = partidoData.currentInning || 1; 
+        isTopInning = (typeof partidoData.isTopInning === 'boolean') ? partidoData.isTopInning : true;
+        outs = (typeof partidoData.outs === 'number') ? partidoData.outs : 0; // Ensure outs is correctly loaded
+        bases = partidoData.bases || [false, false, false];
         
         // Restaurar valores básicos
         document.getElementById("fecha").value = partidoData.fecha || new Date().toISOString().split('T')[0];
@@ -1860,11 +2227,20 @@
             reconstruirLineupInnings("lineup-visitante"); // Ensure header is correct even if tbody is empty
         }
         
-        // Actualizar el resumen después de cargar los innings de los lineups
-        actualizarResumen("lineup-local");
-        actualizarResumen("lineup-visitante");
+        // Actualizar el resumen global después de cargar los innings de los lineups
+        actualizarResumenGlobal();
 
         actualizarRegistrosUI();
+
+        // Set visibility of game details section
+        const gameDetailsContainer = document.getElementById('game-details-container');
+        if (partidoData.showDetails) {
+            gameDetailsContainer.classList.remove('hidden');
+            document.querySelector('.toggle-details-btn').innerHTML = '<i class="fas fa-cog"></i> Esconder Detalles Adicionales';
+        } else {
+            gameDetailsContainer.classList.add('hidden');
+            document.querySelector('.toggle-details-btn').innerHTML = '<i class="fas fa-cog"></i> Mostrar Detalles Adicionales';
+        }
       }
     }
 
@@ -1898,8 +2274,7 @@
             let celdasIning = "";
             for (let inning = 1; inning <= maxInnings; inning++) {
                 const labelText = playerData.innings[inning] || "";
-                const currentInning = (tablaId === 'lineup-local' ? currentInningLocal : currentInningVisitante);
-                const isActiveInning = (inning === currentInning);
+                const isActiveInning = (inning === currentInning); // Use single currentInning
 
                 celdasIning += `
                     <td class="inning-column inning-${inning} ${isActiveInning ? 'active' : ''}">
@@ -1933,32 +2308,21 @@
             `;
             tbody.appendChild(tr);
         });
-        // After rebuilding, ensure the current inning is displayed
-        if (tablaId === 'lineup-local') {
-          showInning('lineup-local', currentInningLocal);
-        } else {
-          showInning('lineup-visitante', currentInningVisitante);
-        }
+        // After rebuilding, ensure the current inning is displayed for both
+        showInning(currentInning);
     }
 
-    // New functions for inning navigation
-    function showInning(tablaId, inningNum) {
-      const table = document.getElementById(tablaId);
-      if (!table) return;
-
+    // Modified function for inning navigation
+    function showInning(inningNum) {
       // Update current inning variable
-      if (tablaId === 'lineup-local') {
-        currentInningLocal = inningNum;
-      } else {
-        currentInningVisitante = inningNum;
-      }
+      currentInning = inningNum;
 
-      // Update inning display text
-      document.getElementById(`current-inning-${tablaId.replace('lineup-', '')}`).textContent = `Inning ${inningNum}`;
+      // Update inning display text for the *single* display element
+      document.getElementById('current-inning-display').textContent = `Inning ${inningNum}`;
 
-      // Get all inning columns for this table (headers and cells)
-      const inningColumns = table.querySelectorAll('.inning-column');
-      inningColumns.forEach(col => {
+      // Get all inning columns (headers and cells) for *both* tables
+      const allInningColumns = document.querySelectorAll('#lineup-local .inning-column, #lineup-visitante .inning-column');
+      allInningColumns.forEach(col => {
         const colInningNum = parseInt(col.classList.value.match(/inning-(\d+)/)[1]);
         if (colInningNum === inningNum) {
           col.classList.add('active');
@@ -1966,33 +2330,93 @@
           col.classList.remove('active');
         }
       });
+      actualizarEstadisticasAdicionales(); // Update inning status display
       guardarEstadoPartido(); // Save state after changing inning
     }
 
-    function showPrevInning(tablaId) {
-      if (tablaId === 'lineup-local') {
-        if (currentInningLocal > 1) {
-          showInning(tablaId, currentInningLocal - 1);
-        }
-      } else {
-        if (currentInningVisitante > 1) {
-          showInning(tablaId, currentInningVisitante - 1);
-        }
+    function showPrevInning() {
+      if (currentInning > 1) {
+        showInning(currentInning - 1);
       }
     }
 
-    function showNextInning(tablaId) {
-      if (tablaId === 'lineup-local') {
-        if (currentInningLocal < maxInnings) {
-          showInning(tablaId, currentInningLocal + 1);
-        }
-      } else {
-        if (currentInningVisitante < maxInnings) {
-          showInning(tablaId, currentInningVisitante + 1);
-        }
+    function showNextInning() {
+      if (currentInning < maxInnings) {
+        showInning(currentInning + 1);
       }
     }
 
+    // NEW FUNCTIONS FOR GAME DETAILS
+    function toggleGameDetails() {
+        const detailsContainer = document.getElementById('game-details-container');
+        const toggleButton = document.querySelector('.toggle-details-btn');
+        if (detailsContainer.classList.contains('hidden')) {
+            detailsContainer.classList.remove('hidden');
+            toggleButton.innerHTML = '<i class="fas fa-cog"></i> Esconder Detalles Adicionales';
+            partidoData.showDetails = true;
+        } else {
+            detailsContainer.classList.add('hidden');
+            toggleButton.innerHTML = '<i class="fas fa-cog"></i> Mostrar Detalles Adicionales';
+            partidoData.showDetails = false;
+        }
+        guardarEstadoPartido();
+    }
+
+    function toggleTopDown() {
+        isTopInning = !isTopInning;
+        outs = 0; // Reset outs when changing Top/Down
+        clearBases(); // Clear bases when changing Top/Down
+        actualizarEstadisticasAdicionales(); // Update the display
+        guardarEstadoPartido();
+    }
+
+    // Modified addOut to accept quantity
+    function addOut(quantity = 1) {
+        outs += quantity;
+        if (outs >= 3) {
+            outs = 0; // Reset outs after 3
+            clearBases(); // Clear bases after 3 outs
+            // Automatically advance to the next half-inning or inning
+            if (isTopInning) {
+                isTopInning = false; // Switch to Down
+            } else {
+                isTopInning = true; // Switch to Top
+                currentInning++; // Advance inning
+                if (currentInning > maxInnings) {
+                    // Optionally handle game end or add extra inning automatically
+                    // For now, let's just not go past maxInnings automatically
+                    currentInning = maxInnings; // Stay at maxInnings if no more innings added
+                }
+                showInning(currentInning); // Update inning display
+            }
+        }
+        actualizarEstadisticasAdicionales(); // Update the display
+        guardarEstadoPartido();
+    }
+
+    function resetOuts() {
+        outs = 0;
+        actualizarEstadisticasAdicionales(); // Update the display
+        guardarEstadoPartido();
+    }
+
+    function updateBasesDisplay() {
+        document.getElementById('base1').classList.toggle('occupied', bases[0]);
+        document.getElementById('base2').classList.toggle('occupied', bases[1]);
+        document.getElementById('base3').classList.toggle('occupied', bases[2]);
+    }
+
+    function toggleBase(baseNumber) {
+        bases[baseNumber - 1] = !bases[baseNumber - 1]; // Toggle true/false
+        updateBasesDisplay();
+        guardarEstadoPartido();
+    }
+
+    function clearBases() {
+        bases = [false, false, false];
+        updateBasesDisplay();
+        guardarEstadoPartido();
+    }
 
     // Cargar datos al iniciar
     window.onload = function() {
@@ -2000,9 +2424,8 @@
       cargarFormatos();
       cargarEstadoPartido();
       
-      // Verify initial inning display
-      showInning('lineup-local', currentInningLocal);
-      showInning('lineup-visitante', currentInningVisitante);
+      // Verify initial inning display (using the single currentInning variable)
+      showInning(currentInning);
 
       // Verificar si hay jugadas disponibles
       const jugadas = obtenerJugadas();
