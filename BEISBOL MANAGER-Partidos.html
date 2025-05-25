@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partidos - Liga Ñanguete</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+  :root {
+    --primary-color: #3f51b5; /* Deeper blue for primary actions/headers */
+    --secondary-color: #ff9800; /* Vibrant orange for accents */
+    --background-color: #f0f2f5; /* Light grey for softer background */
+    --text-color: #333;
+    --light-color: #fff;
+    --border-color: #e0e0e0; /* Softer border color */
+    --success-color: #4caf50;
+    --error-color: #f44336;
+    --info-color: #2196f3;
+    --warning-color: #ffc107; /* Brighter warning color */
+    --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    --shadow-medium: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+    /* Variables for sticky column widths */
+    --col1-width: 50px; /* Width for '#' column */
+    --col2-width: 130px; /* Adjusted Width for 'Jugador' column - slightly smaller */
+    --col3-width: 90px; /* Width for 'Posición' column */
+    --col-delete-width: 40px; /* Width for 'Eliminar' column (the 'x' button) */
+  }
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: var(--background-color);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-color);
+    line-height: 1.6;
+    box-sizing: border-box; /* Ensures padding doesn't affect total width */
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--primary-color);
+    padding: 15px 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-medium);
+    color: var(--light-color);
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+  }
+
+  header img {
+    height: 65px; /* Slightly larger logo */
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+    margin-right: 15px; /* Space between logo and title */
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 28px; /* Larger title */
+    color: var(--light-color);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .header-button {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 15px; /* Space between title and button */
+  }
+
+  .header-button:hover {
+    background-color: var(--secondary-color);
+    color: var(--light-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+  }
+
+  .section-container {
+    background: var(--light-color);
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-light);
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .section-container:hover {
+    transform: translateY(-3px);
+  }
+
+  h2 {
+    margin-top: 0; /* Remove default top margin */
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--secondary-color); /* Thicker, more pronounced border */
+    padding-bottom: 10px;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+  }
+
+  .form-group {
+    display: grid; /* Use CSS Grid for better control */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
+    gap: 20px;
+    margin-bottom: 25px;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #fdfdfd; /* Slightly different background for form */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05); /* Inner shadow for depth */
+  }
+
+  .form-group label {
+    font-weight: bold;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: var(--light-color);
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2); /* Primary color shadow */
+  }
+
+  /* Added a wrapper for tables to handle overflow */
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto; /* Enable horizontal scrolling */
+    margin-top: 20px;
+    box-shadow: var(--shadow-light);
+    border-radius: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate; /* Use separate for border-radius on cells */
+    border-spacing: 0;
+    background-color: var(--light-color);
+    min-width: fit-content; /* Ensure table doesn't shrink smaller than content */
+  }
+
+  th,
+  td {
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    white-space: nowrap; /* Prevent content from wrapping in cells */
+    min-width: 60px; /* Ensure a minimum width for readability */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+  }
+
+  th {
+    background-color: var(--primary-color);
+    color: var(--light-color);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky; /* Make headers stick on scroll */
+    top: 0;
+    z-index: 10;
+  }
+
+  /* Specific styling for table header corners */
+  .table-wrapper thead th:first-child {
+    border-top-left-radius: 12px;
+  }
+
+  .table-wrapper thead th:last-child {
+    border-top-right-radius: 12px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tr:hover {
+    background-color: #eef;
+    transform: scale(1.005);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  /* --- Sticky Columns for Lineup Tables --- */
+  /* # column */
+  .sticky-column-1 {
+    position: sticky;
+    left: 0;
+    z-index: 5; /* Lower than header, higher than regular cells */
+    background-color: var(--light-color); /* Ensure background is solid */
+    min-width: var(--col1-width);
+    width: var(--col1-width);
+    max-width: var(--col1-width);
+  }
+  .table-wrapper thead .sticky-column-1 {
+    z-index: 15; /* Higher than regular headers */
+    background-color: var(--primary-color);
+  }
+
+  /* Jugador column */
+  .sticky-column-2 {
+    position: sticky;
+    left: var(--col1-width);
+    z-index: 4;
+    background-color: var(--light-color);
+    min-width: var(--col2-width);
+    width: var(--col2-width);
+    max-width: var(--col2-width);
+  }
+  .table-wrapper thead .sticky-column-2 {
+    z-index: 14;
+    background-color: var(--primary-color);
+  }
+
+  /* Posicion column */
+  .sticky-column-3 {
+    position: sticky;
+    left: calc(var(--col1-width) + var(--col2-width));
+    z-index: 3;
+    background-color: var(--light-color);
+    min-width: var(--col3-width);
+    width: var(--col3-width);
+    max-width: var(--col3-width);
+  }
+  .table-wrapper thead .sticky-column-3 {
+    z-index: 13;
+    background-color: var(--primary-color);
+  }
+  
+  /* NEW: Delete Button column */
+  .sticky-column-delete {
+    position: sticky;
+    left: calc(var(--col1-width) + var(--col2-width) + var(--col3-width)); /* Position after other sticky columns */
+    z-index: 2; /* Lower than other sticky columns, higher than regular cells */
+    background-color: var(--light-color);
+    min-width: var(--col-delete-width);
+    width: var(--col-delete-width);
+    max-width: var(--col-delete-width);
+  }
+  .table-wrapper thead .sticky-column-delete {
+    z-index: 12; /* Higher than regular headers */
+    background-color: var(--primary-color);
+  }
+
+
+  /* Ensure rows with even background color also apply to sticky cells */
+  tr:nth-child(even) .sticky-column-1,
+  tr:nth-child(even) .sticky-column-2,
+  tr:nth-child(even) .sticky-column-3,
+  tr:nth-child(even) .sticky-column-delete {
+      background-color: #f9f9f9;
+  }
+
+  tr:hover .sticky-column-1,
+  tr:hover .sticky-column-2,
+  tr:hover .sticky-column-3,
+  tr:hover .sticky-column-delete {
+      background-color: #eef;
+  }
+
+  /* --- NEW STYLING FOR JUGADOR SELECT --- */
+  .jugador-select {
+    padding: 6px 8px; /* Reduced padding */
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    width: 100%; /* Fill available space */
+    font-size: 13px; /* Slightly smaller font */
+    box-sizing: border-box; /* Crucial for width calculation */
+    appearance: none; /* Remove default arrow in some browsers */
+    background-color: var(--light-color);
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>'); /* Custom arrow */
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 18px;
+    cursor: pointer;
+    text-overflow: ellipsis; /* Truncate text */
+    overflow: hidden; /* Hide overflow text */
+    white-space: nowrap; /* Prevent wrapping inside select */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .jugador-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+  }
+
+  /* For positional select, similar styling */
+  .posicion-select {
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    width: 100%;
+    font-size: 13px;
+    box-sizing: border-box;
+    appearance: none;
+    background-color: var(--light-color);
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 18px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .posicion-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+  }
+
+  /* NEW: Delete player button style */
+  .delete-player-btn {
+    background-color: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 50%; /* Make it round */
+    width: 25px; /* Fixed width and height for a small button */
+    height: 25px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    box-shadow: var(--shadow-light);
+  }
+
+  .delete-player-btn:hover {
+    background-color: #d32f2f; /* Darker red on hover */
+    transform: scale(1.1);
+  }
+
+  .agregar-btn {
+    margin-top: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .agregar-btn:hover {
+    background-color: #303f9f; /* Darker shade of primary */
+    transform: translateY(-2px);
+  }
+
+  .ining-input {
+    width: 60px; /* Slightly wider */
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    text-align: center;
+    margin: 5px 0;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    font-size: 14px;
+  }
+
+  .ining-input:focus {
+    border-color: var(--secondary-color);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.2);
+  }
+
+  .ining-select {
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    min-width: 110px;
+    background-color: var(--light-color);
+    transition: border 0.3s ease;
+    font-size: 14px;
+    /* Added for consistency with other selects */
+    appearance: none; 
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 18px;
+    cursor: pointer;
+  }
+
+  .ining-select:focus {
+    border-color: var(--secondary-color);
+    outline: none;
+  }
+
+  .ining-label {
+    display: block; /* Change to block for better stacking */
+    margin-top: 8px;
+    padding: 6px 10px;
+    background-color: #f5f5f5; /* Lighter background for label */
+    border-radius: 5px;
+    font-size: 12px;
+    min-width: 70px;
+    word-break: break-all;
+    font-weight: 500;
+    color: #555;
+  }
+
+  .ining-guardar {
+    padding: 7px 14px;
+    margin-top: 8px;
+    background-color: var(--success-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .ining-guardar:hover {
+    background-color: #388e3c; /* Darker success shade */
+    transform: translateY(-1px);
+  }
+
+  .popup {
+    display: none;
+    position: fixed; /* Use fixed for better pop-up behavior */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--light-color);
+    border: 1px solid var(--border-color);
+    padding: 25px;
+    z-index: 1000;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25); /* Stronger shadow for pop-up */
+    max-width: 90%;
+    width: 400px;
+    box-sizing: border-box;
+  }
+
+  .ining-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 140px; /* More space for elements */
+    justify-content: space-around; /* Distribute space */
+  }
+
+  .team-name-input {
+    border: none;
+    border-bottom: 2px solid var(--primary-color);
+    background: transparent;
+    font-weight: bold;
+    text-align: center;
+    font-size: 18px; /* Slightly larger font */
+    padding: 5px 8px;
+    width: calc(100% - 16px); /* Adjust width for padding */
+    color: var(--primary-color);
+    transition: border-color 0.3s ease;
+    max-width: 250px; /* Limit max width */
+  }
+
+  .team-name-input:focus {
+    outline: none;
+    border-bottom-color: var(--secondary-color);
+  }
+
+  .resumen-label {
+    font-weight: bold;
+    padding: 8px;
+    min-width: 30px;
+    display: inline-block;
+    font-size: 18px; /* Larger score font */
+    color: var(--text-color);
+  }
+
+  .total-cell {
+    font-size: 22px; /* Even larger total score */
+    color: var(--primary-color);
+    font-weight: 700;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 15px; /* Increased gap */
+    margin-bottom: 25px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .action-button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-light);
+  }
+
+  .action-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+  }
+
+  .export-btn {
+    background-color: var(--info-color);
+    color: white;
+  }
+
+  .export-btn:hover {
+    background-color: #1976d2; /* Darker info shade */
+  }
+
+  .import-btn {
+    background-color: #9c27b0;
+    color: white;
+  }
+
+  .import-btn:hover {
+    background-color: #7b1fa2;
+  }
+
+  .finish-btn {
+    background-color: var(--error-color);
+    color: white;
+  }
+
+  .finish-btn:hover {
+    background-color: #d32f2f;
+  }
+
+  .reset-btn {
+    background-color: var(--warning-color);
+    color: #333; /* Darker text for warning background */
+  }
+
+  .reset-btn:hover {
+    background-color: #fbc02d; /* Darker warning shade */
+  }
+
+  .registros-container {
+    margin-top: 15px;
+    max-height: 350px; /* Slightly taller */
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    background-color: white;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .registro-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-family: 'Roboto Mono', monospace; /* More modern monospace font */
+    font-size: 15px;
+    color: #444;
+  }
+
+  .registro-item:last-child {
+    border-bottom: none;
+  }
+
+  .inning-extra-btn {
+    margin-top: 20px;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .inning-extra-btn:hover {
+    background-color: #fb8c00; /* Darker secondary shade */
+    transform: translateY(-2px);
+  }
+
+  /* --- Responsive Design (Media Queries) --- */
+
+  /* For Tablets and larger phones (e.g., 768px to 1024px) */
+  @media (max-width: 1024px) {
+    body {
+      padding: 15px;
+    }
+
+    header {
+      padding: 15px;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    header img {
+      margin-bottom: 10px;
+      margin-right: 0;
+    }
+
+    header h1 {
+      font-size: 26px;
+      margin-bottom: 10px;
+    }
+
+    .header-button {
+      margin-left: 0;
+      margin-top: 10px;
+    }
+
+    .section-container {
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+
+    .form-group {
+      grid-template-columns: 1fr; /* Stack inputs vertically */
+      gap: 15px;
+    }
+
+    table {
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 10px 5px;
+    }
+
+    .team-name-input {
+      font-size: 16px;
+      max-width: 100%;
+    }
+
+    .resumen-label {
+      font-size: 16px;
+    }
+
+    .total-cell {
+      font-size: 20px;
+    }
+
+    .ining-input,
+    .ining-select,
+    .ining-guardar {
+      font-size: 13px;
+      padding: 6px;
+    }
+
+    .ining-label {
+      font-size: 11px;
+      padding: 5px;
+    }
+
+    .action-buttons {
+      flex-direction: column; /* Stack action buttons */
+      gap: 10px;
+    }
+
+    .action-button {
+      width: 100%; /* Full width for stacked buttons */
+      justify-content: center;
+    }
+    
+    .delete-player-btn {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+  }
+
+  /* For Mobile devices (e.g., up to 767px) */
+  @media (max-width: 767px) {
+    body {
+      padding: 10px;
+    }
+
+    header {
+      padding: 10px;
+    }
+
+    header img {
+      height: 50px;
+    }
+
+    header h1 {
+      font-size: 22px;
+    }
+
+    .header-button {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .section-container {
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    .form-group input,
+    .form-group select {
+      font-size: 14px;
+      padding: 10px;
+    }
+
+    /* Make table cells scrollable horizontally if content overflows */
+    /* These rules are now largely redundant due to .table-wrapper but kept for specific mobile adjustments if any */
+    table {
+      /* display: block; */ /* This might interfere with table's native rendering, let .table-wrapper handle display */
+      /* overflow-x: auto; */ /* Handled by .table-wrapper */
+      /* white-space: nowrap; */ /* Handled by th, td */
+    }
+
+    th, td {
+      min-width: 60px; /* Ensure a minimum width for readability */
+      max-width: 120px; /* Optional: limit max width if needed */
+      box-sizing: border-box; /* Include padding in width calculation */
+    }
+
+    .team-name-input {
+      font-size: 14px;
+      padding: 3px 5px;
+    }
+
+    .resumen-label {
+      font-size: 14px;
+    }
+
+    .total-cell {
+      font-size: 18px;
+    }
+
+    .agregar-btn,
+    .inning-extra-btn {
+      padding: 10px 15px;
+      font-size: 14px;
+    }
+
+    .registros-container {
+      max-height: 250px;
+      padding: 10px;
+    }
+
+    .registro-item {
+      font-size: 13px;
+      padding: 6px;
+    }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <img src="BEISBOL ESTADISTICAS-LOGO.png" alt="Logo Liga Ñanguete" />
+    <h1>PARTIDOS - LIGA ÑANGUETE</h1>
+    <a href="index.html"><button class="header-button"><i class="fas fa-home"></i> Inicio</button></a>
+  </header>
+
+  <div class="section-container">
+    <div class="form-group">
+      <label for="fecha"><i class="far fa-calendar-alt"></i> Fecha:</label>
+      <input type="date" id="fecha" />
+
+      <label for="formato"><i class="fas fa-list-ol"></i> Formato:</label>
+      <select id="formato"></select>
+
+      <label for="numeroJuego"><i class="fas fa-hashtag"></i> Número de juego:</label>
+      <input type="number" id="numeroJuego" min="1" />
+    </div>
+  </div>
+
+  <div class="section-container" id="resumen-container">
+    <h2><i class="fas fa-clipboard-list"></i> Resumen del Juego</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Equipo</th>
+            <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" class="team-name-input" id="local-team-name" placeholder="Nombre local" onchange="actualizarNombreEquipoResumen('local')" /></td>
+            <td><div class="resumen-label" id="local-1">0</div></td>
+            <td><div class="resumen-label" id="local-2">0</div></td>
+            <td><div class="resumen-label" id="local-3">0</div></td>
+            <td><div class="resumen-label" id="local-4">0</div></td>
+            <td><div class="resumen-label" id="local-5">0</div></td>
+            <td><div class="resumen-label" id="local-6">0</div></td>
+            <td><div class="resumen-label" id="local-7">0</div></td>
+            <td><div class="resumen-label" id="local-8">0</div></td>
+            <td><div class="resumen-label" id="local-9">0</div></td>
+            <td class="total-cell"><strong id="local-total">0</strong></td>
+          </tr>
+          <tr>
+            <td><input type="text" class="team-name-input" id="visitante-team-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoResumen('visitante')" /></td>
+            <td><div class="resumen-label" id="visitante-1">0</div></td>
+            <td><div class="resumen-label" id="visitante-2">0</div></td>
+            <td><div class="resumen-label" id="visitante-3">0</div></td>
+            <td><div class="resumen-label" id="visitante-4">0</div></td>
+            <td><div class="resumen-label" id="visitante-5">0</div></td>
+            <td><div class="resumen-label" id="visitante-6">0</div></td>
+            <td><div class="resumen-label" id="visitante-7">0</div></td>
+            <td><div class="resumen-label" id="visitante-8">0</div></td>
+            <td><div class="resumen-label" id="visitante-9">0</div></td>
+            <td class="total-cell"><strong id="visitante-total">0</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="inning-extra-btn" onclick="agregarInning()"><i class="fas fa-plus"></i> Agregar Inning Extra</button>
+  </div>
+
+  <div class="section-container">
+    <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-local-name" placeholder="Nombre local" onchange="actualizarNombreEquipoLineup('local')" /></h2>
+    <div class="table-wrapper">
+      <table id="lineup-local">
+        <thead>
+          <tr>
+            <th class="sticky-column-1">#</th>
+            <th class="sticky-column-2">Jugador</th>
+            <th class="sticky-column-3">Posición</th>
+            <th class="sticky-column-delete"></th> <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <button class="agregar-btn" onclick="agregarJugador('lineup-local')"><i class="fas fa-plus"></i> Agregar Jugador</button>
+  </div>
+
+  <div class="section-container">
+    <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-visitante-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoLineup('visitante')" /></h2>
+    <div class="table-wrapper">
+      <table id="lineup-visitante">
+        <thead>
+          <tr>
+            <th class="sticky-column-1">#</th>
+            <th class="sticky-column-2">Jugador</th>
+            <th class="sticky-column-3">Posición</th>
+            <th class="sticky-column-delete"></th> <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <button class="agregar-btn" onclick="agregarJugador('lineup-visitante')"><i class="fas fa-plus"></i> Agregar Jugador</button>
+  </div>
+
+  <div class="section-container">
+    <h2><i class="fas fa-history"></i> Registros del Juego</h2>
+    
+    <div class="action-buttons">
+      <button class="action-button export-btn" onclick="exportarJuegoCSV()">
+        <i class="fas fa-file-export"></i> Exportar Juego CSV
+      </button>
+      <button class="action-button import-btn" onclick="document.getElementById('file-input').click()">
+        <i class="fas fa-file-import"></i> Importar Juego CSV
+        <input type="file" id="file-input" accept=".csv" style="display: none;" onchange="importarJuegoCSV(event)">
+      </button>
+      <button class="action-button reset-btn" onclick="reiniciarPartido()">
+        <i class="fas fa-redo"></i> Reiniciar Partido
+      </button>
+      <button class="action-button finish-btn" onclick="terminarPartido()">
+        <i class="fas fa-flag-checkered"></i> Terminar Partido
+      </button>
+    </div>
+    
+    <div class="registros-container" id="registros-container">
+      </div>
+  </div>
+
+  <div id="popup" class="popup"></div>
+
+  <script>
+    const posiciones = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
+    let registrosJuego = [];
+    let maxInnings = 9;
+    let partidoData = {
+      fecha: "",
+      formato: "",
+      numeroJuego: "",
+      localTeamName: "Local",
+      visitanteTeamName: "Visitante",
+      registros: [],
+      maxInnings: 9
+    };
+
+    // Función para obtener las jugadas desde localStorage
+    function obtenerJugadas() {
+      const jugadasData = localStorage.getItem("jugadasData");
+      if (jugadasData) {
+        const jugadas = JSON.parse(jugadasData);
+        return jugadas.map(jugada => ({
+          nombre: jugada.jugada || jugada.nombre,
+          descripcion: jugada.descripcion
+        }));
+      }
+      return [];
+    }
+
+    // Inicializar localStorage con datos de ejemplo si está vacío
+    function inicializarDatosEjemplo() {
+      if (!localStorage.getItem("jugadasData")) {
+        const jugadasEjemplo = [
+          { jugada: "H", nombre: "H", descripcion: "Hit" },
+          { jugada: "A", nombre: "A", descripcion: "Carrera Anotada" },
+          { jugada: "CI", nombre: "CI", descripcion: "Carrera Impulsada" },
+          { jugada: "K", nombre: "K", descripcion: "Ponche" },
+          { jugada: "BB", nombre: "BB", descripcion: "Base por Bolas" },
+          { jugada: "E", nombre: "E", descripcion: "Error" }
+        ];
+        localStorage.setItem("jugadasData", JSON.stringify(jugadasEjemplo));
+      }
+      
+      if (!localStorage.getItem("jugadoresData")) {
+        localStorage.setItem("jugadoresData", JSON.stringify([
+          { nombre: "Juan Pérez", equipo: "Local" },
+          { nombre: "Pedro González", equipo: "Local" },
+          { nombre: "María Fernández", equipo: "Local" }, // Added for testing
+          { nombre: "Luis Rodríguez", equipo: "Visitante" },
+          { nombre: "Ana García", equipo: "Visitante" },
+          { nombre: "Carlos Sánchez", equipo: "Local" },
+          { nombre: "Marta Díaz", equipo: "Visitante" }
+        ]));
+      }
+      
+      if (!localStorage.getItem("formatosData")) {
+        localStorage.setItem("formatosData", JSON.stringify([
+          { formato: "7 Entradas", descripcion: "7 entradas" },
+          { formato: "9 Entradas", descripcion: "9 entradas" }
+        ]));
+      }
+    }
+
+    function cargarFormatos() {
+      const select = document.getElementById("formato");
+      const formatosData = localStorage.getItem("formatosData");
+      if (formatosData) {
+        const formatos = JSON.parse(formatosData);
+        select.innerHTML = "";
+        formatos.forEach(f => {
+          const option = document.createElement("option");
+          option.value = f.formato;
+          option.textContent = f.formato;
+          select.appendChild(option);
+        });
+      }
+    }
+
+    function agregarJugador(tablaId) {
+      const tabla = document.getElementById(tablaId);
+      const tbody = tabla.querySelector("tbody");
+      const jugadoresData = JSON.parse(localStorage.getItem("jugadoresData")) || [];
+      const jugadasData = obtenerJugadas();
+      
+      if (jugadasData.length === 0) {
+        alert("No hay jugadas registradas. Por favor, agregue jugadas primero.");
+        return;
+      }
+
+      const tr = document.createElement("tr");
+      // The index will now be the position in the table, not necessarily the # column value
+      const index = tbody.rows.length + 1; 
+
+      const opcionesJugadores = jugadoresData.map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
+      const opcionesPosiciones = posiciones.map(p => `<option value="${p}">${p}</option>`).join("");
+      const opcionesJugadas = jugadasData.map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
+
+      let celdasIning = "";
+      for (let i = 0; i < maxInnings; i++) {
+        celdasIning += `
+          <td>
+            <div class="ining-container">
+              <select class="ining-select">
+                <option value="">--</option>
+                ${opcionesJugadas}
+              </select>
+              <input type="number" class="ining-input" value="1" min="-999" max="999">
+              <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${i+1})"><i class="fas fa-save"></i> Guardar</button>
+              <div class="ining-label"></div>
+            </div>
+          </td>`;
+      }
+
+      tr.innerHTML = `
+        <td class="sticky-column-1">${index}</td>
+        <td class="sticky-column-2"><select class="jugador-select"><option value="">Seleccionar</option>${opcionesJugadores}</select></td>
+        <td class="sticky-column-3"><select class="posicion-select"><option value="">--</option>${opcionesPosiciones}</select></td>
+        <td class="sticky-column-delete">
+            <button class="delete-player-btn" onclick="eliminarJugador(this, '${tablaId}')">X</button>
+        </td>
+        ${celdasIning}
+      `;
+      tbody.appendChild(tr);
+      guardarEstadoPartido(); // Save state after adding a player
+    }
+
+    function eliminarJugador(btn, tablaId) {
+        if (!confirm("¿Estás seguro de que quieres eliminar a este jugador del lineup? Se perderán todas sus jugadas registradas en este partido.")) {
+            return;
+        }
+
+        const rowToDelete = btn.closest("tr");
+        const tbody = rowToDelete.parentElement;
+        const jugadorSelect = rowToDelete.querySelector(".jugador-select");
+        const nombreJugadorEliminado = jugadorSelect ? jugadorSelect.value : "";
+
+        // Remove the row from the table
+        tbody.removeChild(rowToDelete);
+
+        // Reindex the '#' column for remaining players
+        Array.from(tbody.children).forEach((row, idx) => {
+            row.cells[0].textContent = idx + 1; // Update the # column
+        });
+
+        // Remove associated records from registrosJuego
+        registrosJuego = registrosJuego.filter(registro => {
+            // Check if the record belongs to the team and the player being deleted
+            const equipoDelRegistro = (tablaId.includes('local') ? 
+                (document.getElementById('lineup-local-name').value || 'Local') : 
+                (document.getElementById('lineup-visitante-name').value || 'Visitante'));
+            
+            return !(registro.equipo === equipoDelRegistro && registro.jugador === nombreJugadorEliminado);
+        });
+
+        actualizarRegistrosUI();
+        actualizarResumen(tablaId); // Recalculate totals for the affected team
+        guardarEstadoPartido(); // Save the new state
+    }
+
+
+    function guardarJugada(btn, tablaId, inning) {
+      const container = btn.parentElement;
+      const select = container.querySelector(".ining-select");
+      const input = container.querySelector(".ining-input");
+      const label = container.querySelector(".ining-label");
+      
+      const jugada = select.value;
+      const cantidad = input.value;
+      
+      if (jugada) {
+        if (label.textContent) {
+          label.textContent += `+${cantidad}${jugada}`;
+        } else {
+          label.textContent = `${cantidad}${jugada}`;
+        }
+        
+        select.value = "";
+        input.value = "1";
+        
+        actualizarResumen(tablaId);
+        
+        const row = btn.closest("tr");
+        const jugadorSelect = row.querySelector(".jugador-select");
+        const posicionSelect = row.querySelector(".posicion-select");
+        const jugador = jugadorSelect ? jugadorSelect.value : "Desconocido";
+        const posicion = posicionSelect ? posicionSelect.value : "Desconocido";
+        const equipo = tablaId.includes("local") ? 
+          document.getElementById("lineup-local-name").value || "Local" : 
+          document.getElementById("lineup-visitante-name").value || "Visitante";
+        
+        const registro = {
+          fecha: document.getElementById("fecha").value,
+          formato: document.getElementById("formato").value,
+          numeroJuego: document.getElementById("numeroJuego").value,
+          equipo: equipo,
+          jugador: jugador,
+          posicion: posicion,
+          inning: inning,
+          jugada: jugada,
+          cantidad: cantidad,
+          timestamp: new Date().toISOString()
+        };
+        
+        registrosJuego.push(registro);
+        actualizarRegistrosUI();
+        guardarEstadoPartido();
+      } else {
+        alert("Por favor, seleccione una jugada");
+      }
+    }
+
+    function actualizarResumen(tablaId) {
+      const equipo = tablaId.includes("local") ? "local" : "visitante";
+      const tabla = document.getElementById(tablaId);
+      const tbody = tabla.querySelector("tbody");
+      
+      const sumasInnings = {};
+      for (let i = 1; i <= maxInnings; i++) {
+        sumasInnings[i] = 0;
+      }
+      
+      tbody.querySelectorAll("tr").forEach(row => {
+        // Adjust index for player columns (#, Jugador, Posicion, Delete Button)
+        // Inning cells now start from index 4 (0,1,2,3 for static, 4 for 1st inning)
+        for (let i = 4; i < 4 + maxInnings; i++) { 
+          const cell = row.cells[i];
+          if (cell) {
+            const label = cell.querySelector(".ining-label");
+            if (label && label.textContent) {
+              const regex = /([+-]?\d+)A/g;
+              let match;
+              while ((match = regex.exec(label.textContent)) !== null) {
+                const inning = i - 3; // Inning number corresponds to column index - 3 (for #, Jugador, Posicion, Delete)
+                sumasInnings[inning] += parseInt(match[1]);
+              }
+            }
+          }
+        }
+      });
+      
+      for (let inning = 1; inning <= maxInnings; inning++) {
+        const label = document.getElementById(`${equipo}-${inning}`);
+        if (label) {
+          label.textContent = sumasInnings[inning] || "0";
+        }
+      }
+      
+      const total = Object.values(sumasInnings).reduce((sum, val) => sum + val, 0);
+      document.getElementById(`${equipo}-total`).textContent = total;
+    }
+
+    function actualizarNombreEquipoLineup(tipo) {
+      const input = document.getElementById(`lineup-${tipo}-name`);
+      const resumenInput = document.getElementById(`${tipo}-team-name`);
+      if (input && resumenInput) {
+        resumenInput.value = input.value;
+      }
+      guardarEstadoPartido();
+    }
+
+    function actualizarNombreEquipoResumen(tipo) {
+      const input = document.getElementById(`${tipo}-team-name`);
+      const lineupInput = document.getElementById(`lineup-${tipo}-name`);
+      if (input && lineupInput) {
+        lineupInput.value = input.value;
+      }
+      guardarEstadoPartido();
+    }
+
+    function actualizarRegistrosUI() {
+      const container = document.getElementById("registros-container");
+      container.innerHTML = "";
+      
+      registrosJuego.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      registrosJuego.forEach(registro => {
+        const registroElement = document.createElement("div");
+        registroElement.className = "registro-item";
+        registroElement.textContent = `[${registro.timestamp.split('T')[1].substring(0, 8)}] ${registro.equipo} - ${registro.jugador} (${registro.posicion}): Inning ${registro.inning} - ${registro.cantidad}${registro.jugada}`;
+        container.appendChild(registroElement);
+      });
+    }
+
+    function exportarJuegoCSV() {
+      if (registrosJuego.length === 0) {
+        alert("No hay registros para exportar");
+        return;
+      }
+      
+      const headers = Object.keys(registrosJuego[0]);
+      let csv = headers.join(",") + "\n";
+      
+      registrosJuego.forEach(registro => {
+        const values = headers.map(header => {
+          let value = registro[header] || "";
+          if (typeof value === "string" && value.includes(",")) {
+            value = `"${value}"`;
+          }
+          return value;
+        });
+        csv += values.join(",") + "\n";
+      });
+      
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `partido_${document.getElementById("fecha").value}_${document.getElementById("local-team-name").value || "Local"}_vs_${document.getElementById("visitante-team-name").value || "Visitante"}.csv`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function importarJuegoCSV(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const contents = e.target.result;
+        const lines = contents.split("\n");
+        
+        if (lines.length < 2) {
+          alert("El archivo CSV no contiene datos válidos");
+          return;
+        }
+        
+        registrosJuego = [];
+        // No limpiamos los tbody de los lineups aquí, sino que reconstruimos desde los registros.
+        // document.getElementById("lineup-local").querySelector("tbody").innerHTML = "";
+        // document.getElementById("lineup-visitante").querySelector("tbody").innerHTML = "";
+        
+        const headers = lines[0].split(",").map(h => h.trim());
+        
+        for (let i = 1; i < lines.length; i++) {
+          if (!lines[i].trim()) continue;
+          
+          const values = lines[i].split(",").map(v => v.trim().replace(/^"(.*)"$/, '$1'));
+          const registro = {};
+          
+          headers.forEach((header, index) => {
+            registro[header] = values[index] || "";
+          });
+          
+          registrosJuego.push(registro);
+        }
+        
+        reconstruirDesdeRegistros();
+        actualizarRegistrosUI();
+        guardarEstadoPartido();
+        
+        alert(`Se importaron ${registrosJuego.length} registros correctamente`);
+      };
+      
+      reader.readAsText(file);
+      event.target.value = "";
+    }
+
+    function reconstruirDesdeRegistros() {
+      if (registrosJuego.length === 0) return;
+      
+      const primerRegistro = registrosJuego[0];
+      document.getElementById("fecha").value = primerRegistro.fecha || "";
+      document.getElementById("formato").value = primerRegistro.formato || "";
+      document.getElementById("numeroJuego").value = primerRegistro.numeroJuego || "";
+      
+      const equipos = {};
+      
+      registrosJuego.forEach(registro => {
+        if (!equipos[registro.equipo]) {
+          equipos[registro.equipo] = {};
+        }
+        
+        if (!equipos[registro.equipo][registro.jugador]) {
+          equipos[registro.equipo][registro.jugador] = {
+            posicion: registro.posicion,
+            innings: {}
+          };
+        }
+        
+        if (!equipos[registro.equipo][registro.jugador].innings[registro.inning]) {
+          equipos[registro.equipo][registro.jugador].innings[registro.inning] = [];
+        }
+        
+        equipos[registro.equipo][registro.jugador].innings[registro.inning].push({
+          jugada: registro.jugada,
+          cantidad: registro.cantidad
+        });
+      });
+      
+      // Actualizar maxInnings basado en los registros importados
+      maxInnings = Math.max(...registrosJuego.map(r => parseInt(r.inning)), 9);
+      
+      // Reconstruir tabla de resumen con los innings necesarios
+      reconstruirTablaResumen();
+
+      for (const equipoNombre in equipos) {
+        const esLocal = equipoNombre === partidoData.localTeamName || 
+                        (document.getElementById("lineup-local-name").value && 
+                         equipoNombre === document.getElementById("lineup-local-name").value);
+        
+        const tablaId = esLocal ? "lineup-local" : "lineup-visitante";
+        const nombreInputId = esLocal ? "lineup-local-name" : "lineup-visitante-name";
+        const resumenInputId = esLocal ? "local-team-name" : "visitante-team-name";
+        
+        document.getElementById(nombreInputId).value = equipoNombre;
+        document.getElementById(resumenInputId).value = equipoNombre;
+        
+        const tbody = document.getElementById(tablaId).querySelector("tbody");
+        tbody.innerHTML = ""; // Limpia las filas existentes antes de reconstruir
+        
+        const jugadoresEnLocalStorage = JSON.parse(localStorage.getItem("jugadoresData")) || [];
+
+        let playerIndex = 1; // For the '#' column
+        for (const jugadorNombre in equipos[equipoNombre]) {
+          const datosJugador = equipos[equipoNombre][jugadorNombre];
+          const tr = document.createElement("tr");
+          
+          let celdasIning = "";
+          const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
+
+          for (let inning = 1; inning <= maxInnings; inning++) {
+            const jugadasInning = datosJugador.innings[inning] || [];
+            const labelText = jugadasInning.map(j => `${j.cantidad}${j.jugada}`).join("+");
+            
+            celdasIning += `
+              <td>
+                <div class="ining-container">
+                  <select class="ining-select">
+                    <option value="">--</option>
+                    ${jugadasOptions}
+                  </select>
+                  <input type="number" class="ining-input" value="1" min="-999" max="999">
+                  <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${inning})"><i class="fas fa-save"></i> Guardar</button>
+                  <div class="ining-label">${labelText}</div>
+                </div>
+              </td>`;
+          }
+          
+          const opcionesJugadores = jugadoresEnLocalStorage.map(j => `<option value="${j.nombre}" ${j.nombre === jugadorNombre ? 'selected' : ''}>${j.nombre}</option>`).join("");
+          const opcionesPosiciones = posiciones.map(p => `<option value="${p}" ${p === datosJugador.posicion ? 'selected' : ''}>${p}</option>`).join("");
+
+
+          tr.innerHTML = `
+            <td class="sticky-column-1">${playerIndex++}</td>
+            <td class="sticky-column-2"><select class="jugador-select"><option value="">Seleccionar</option>${opcionesJugadores}</select></td>
+            <td class="sticky-column-3"><select class="posicion-select"><option value="">--</option>${opcionesPosiciones}</select></td>
+            <td class="sticky-column-delete">
+                <button class="delete-player-btn" onclick="eliminarJugador(this, '${tablaId}')">X</button>
+            </td>
+            ${celdasIning}
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+      
+      actualizarResumen("lineup-local");
+      actualizarResumen("lineup-visitante");
+    }
+
+    function reconstruirTablaResumen() {
+      const resumenTabla = document.querySelector("#resumen-container table");
+      const resumenThead = resumenTabla.querySelector("thead tr");
+      const resumenTbodyLocal = resumenTabla.querySelector("tbody tr:first-child");
+      const resumenTbodyVisitante = resumenTabla.querySelector("tbody tr:last-child");
+
+      // Clear existing inning headers and cells (except Team and Total)
+      // Iterate backwards to safely remove elements
+      for (let i = resumenThead.children.length - 2; i > 0; i--) { 
+        resumenThead.removeChild(resumenThead.children[i]);
+      }
+      for (let i = resumenTbodyLocal.children.length - 2; i > 0; i--) {
+        resumenTbodyLocal.removeChild(resumenTbodyLocal.children[i]);
+      }
+      for (let i = resumenTbodyVisitante.children.length - 2; i > 0; i--) {
+        resumenTbodyVisitante.removeChild(resumenTbodyVisitante.children[i]);
+      }
+
+      // Add new inning headers and cells
+      for (let i = 1; i <= maxInnings; i++) {
+        const th = document.createElement("th");
+        th.textContent = i;
+        resumenThead.insertBefore(th, resumenThead.lastElementChild);
+
+        const localTd = document.createElement("td");
+        localTd.innerHTML = `<div class="resumen-label" id="local-${i}">0</div>`;
+        resumenTbodyLocal.insertBefore(localTd, resumenTbodyLocal.lastElementChild);
+
+        const visitanteTd = document.createElement("td");
+        visitanteTd.innerHTML = `<div class="resumen-label" id="visitante-${i}">0</div>`;
+        resumenTbodyVisitante.insertBefore(visitanteTd, resumenTbodyVisitante.lastElementChild);
+      }
+      
+      // Restore team names
+      document.getElementById("local-team-name").value = partidoData.localTeamName || "Local";
+      document.getElementById("visitante-team-name").value = partidoData.visitanteTeamName || "Visitante";
+    }
+
+    // NEW FUNCTION: Rebuilds inning columns for existing players in a lineup
+    function reconstruirLineupInnings(tablaId) {
+        const tabla = document.getElementById(tablaId);
+        const theadRow = tabla.querySelector("thead tr");
+        const tbodyRows = tabla.querySelectorAll("tbody tr");
+
+        // 1. Remove all existing inning headers from thead (keep the first 4 static columns: #, Jugador, Posicion, Delete)
+        const firstInningHeaderIndex = 4;
+        while (theadRow.children.length > firstInningHeaderIndex) { 
+            theadRow.removeChild(theadRow.lastElementChild); 
+        }
+
+        // 2. Remove all existing inning cells from each player row (keep the first 4 static cells)
+        tbodyRows.forEach(row => {
+            while (row.children.length > 4) { 
+                row.removeChild(row.lastElementChild);
+            }
+        });
+
+        // 3. Add new inning headers (up to maxInnings)
+        for (let i = 1; i <= maxInnings; i++) {
+            const newTh = document.createElement("th");
+            newTh.textContent = i;
+            theadRow.appendChild(newTh);
+        }
+
+        // 4. Add new, empty inning cells for each player row (up to maxInnings)
+        const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
+        tbodyRows.forEach(row => {
+            for (let i = 1; i <= maxInnings; i++) {
+                const nuevaCelda = document.createElement("td");
+                nuevaCelda.innerHTML = `
+                    <div class="ining-container">
+                        <select class="ining-select">
+                            <option value="">--</option>
+                            ${jugadasOptions}
+                        </select>
+                        <input type="number" class="ining-input" value="1" min="-999" max="999">
+                        <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${i})"><i class="fas fa-save"></i> Guardar</button>
+                        <div class="ining-label"></div>
+                    </div>
+                `;
+                row.appendChild(nuevaCelda);
+            }
+        });
+        // Important: Update totals to 0 after resetting innings
+        const equipoTipo = tablaId.includes('local') ? 'local' : 'visitante';
+        document.getElementById(`${equipoTipo}-total`).textContent = '0';
+        for (let i = 1; i <= maxInnings; i++) {
+            const label = document.getElementById(`${equipoTipo}-${i}`);
+            if (label) {
+                label.textContent = '0';
+            }
+        }
+    }
+
+    function agregarInning() {
+      maxInnings++;
+      
+      // Add column to summary table header
+      const resumenThead = document.querySelector("#resumen-container table thead tr");
+      const newTh = document.createElement("th");
+      newTh.textContent = maxInnings;
+      resumenThead.insertBefore(newTh, resumenThead.lastElementChild);
+
+      // Add column to summary table rows for local and visitor teams
+      const resumenLocalRow = document.querySelector("#resumen-container table tbody tr:first-child");
+      const newLocalCell = document.createElement("td");
+      newLocalCell.innerHTML = `<div class="resumen-label" id="local-${maxInnings}">0</div>`;
+      resumenLocalRow.insertBefore(newLocalCell, resumenLocalRow.lastElementChild);
+
+      const resumenVisitanteRow = document.querySelector("#resumen-container table tbody tr:last-child");
+      const newVisitanteCell = document.createElement("td");
+      newVisitanteCell.innerHTML = `<div class="resumen-label" id="visitante-${maxInnings}">0</div>`;
+      resumenVisitanteRow.insertBefore(newVisitanteCell, resumenVisitanteRow.lastElementChild);
+      
+      // Add column to lineups
+      const lineups = ["lineup-local", "lineup-visitante"];
+      lineups.forEach(lineupId => {
+        const tabla = document.getElementById(lineupId);
+        const theadRow = tabla.querySelector("thead tr");
+        const tbodyRows = tabla.querySelectorAll("tbody tr");
+
+        // Add new header for the inning
+        const newInningTh = document.createElement("th");
+        newInningTh.textContent = maxInnings;
+        theadRow.appendChild(newInningTh);
+        
+        // Add new cells for each player in the lineup
+        tbodyRows.forEach(row => {
+          const nuevaCelda = document.createElement("td");
+          nuevaCelda.innerHTML = `
+            <div class="ining-container">
+              <select class="ining-select">
+                <option value="">--</option>
+                ${obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("")}
+              </select>
+              <input type="number" class="ining-input" value="1" min="-999" max="999">
+              <button class="ining-guardar" onclick="guardarJugada(this, '${lineupId}', ${maxInnings})"><i class="fas fa-save"></i> Guardar</button>
+              <div class="ining-label"></div>
+            </div>
+          `;
+          row.appendChild(nuevaCelda);
+        });
+      });
+      
+      guardarEstadoPartido();
+    }
+
+    function reiniciarPartido() {
+      if (confirm("¿Estás seguro de que quieres reiniciar el partido? Se perderán todos los registros de jugadas, pero los jugadores en el lineup se mantendrán.")) {
+        // Limpiar todos los campos del formulario
+        document.getElementById("fecha").value = new Date().toISOString().split('T')[0];
+        document.getElementById("formato").value = "";
+        document.getElementById("numeroJuego").value = "";
+        
+        // Reiniciar nombres de equipos
+        document.getElementById("local-team-name").value = "Local";
+        document.getElementById("visitante-team-name").value = "Visitante";
+        document.getElementById("lineup-local-name").value = "Local";
+        document.getElementById("lineup-visitante-name").value = "Visitante";
+        
+        // Resetear la cantidad máxima de innings a 9
+        maxInnings = 9; 
+        
+        // Reconstruir la tabla de resumen con 9 innings y reiniciar sus totales
+        reconstruirTablaResumen();
+
+        // Reiniciar los innings de los lineups de ambos equipos sin eliminar los jugadores
+        reconstruirLineupInnings("lineup-local");
+        reconstruirLineupInnings("lineup-visitante");
+        
+        // Limpiar registros del juego
+        registrosJuego = [];
+        document.getElementById("registros-container").innerHTML = "";
+        
+        // Guardar el estado "limpio" del partido
+        guardarEstadoPartido();
+        
+        alert("Partido reiniciado. Puedes comenzar un nuevo partido.");
+      }
+    }
+
+    function terminarPartido() {
+      if (registrosJuego.length > 0) {
+        exportarJuegoCSV();
+      }
+      
+      reiniciarPartido();
+      alert("Partido terminado y datos exportados. Campos limpiados para un nuevo partido.");
+    }
+
+    function guardarEstadoPartido() {
+      // Necesitamos guardar el estado de los lineups, incluyendo jugadores y sus innings
+      const localLineupRows = Array.from(document.getElementById("lineup-local").querySelectorAll("tbody tr"));
+      const visitanteLineupRows = Array.from(document.getElementById("lineup-visitante").querySelectorAll("tbody tr"));
+
+      const parseLineupRow = (row) => { 
+          const jugadorSelect = row.querySelector(".jugador-select");
+          const posicionSelect = row.querySelector(".posicion-select");
+          const jugador = jugadorSelect ? jugadorSelect.value : "";
+          const posicion = posicionSelect ? posicionSelect.value : "";
+          
+          const inningsData = {};
+          // Inning cells now start from index 4 (0,1,2,3 for static, 4 for 1st inning)
+          for (let i = 4; i < row.cells.length; i++) {
+              const inningNum = i - 3; // Convert cell index to inning number (e.g., cell 4 is inning 1)
+              const label = row.cells[i].querySelector(".ining-label");
+              if (label && label.textContent) {
+                  inningsData[inningNum] = label.textContent;
+              }
+          }
+          return { jugador, posicion, innings: inningsData };
+      };
+
+      const localLineup = localLineupRows.map(row => parseLineupRow(row));
+      const visitanteLineup = visitanteLineupRows.map(row => parseLineupRow(row));
+
+
+      partidoData = {
+        fecha: document.getElementById("fecha").value,
+        formato: document.getElementById("formato").value,
+        numeroJuego: document.getElementById("numeroJuego").value,
+        localTeamName: document.getElementById("local-team-name").value,
+        visitanteTeamName: document.getElementById("visitante-team-name").value,
+        registros: registrosJuego,
+        maxInnings: maxInnings,
+        localLineup: localLineup, 
+        visitanteLineup: visitanteLineup
+      };
+      
+      localStorage.setItem("partidoEnCurso", JSON.stringify(partidoData));
+    }
+
+    function cargarEstadoPartido() {
+      const savedData = localStorage.getItem("partidoEnCurso");
+      if (savedData) {
+        partidoData = JSON.parse(savedData);
+        registrosJuego = partidoData.registros || [];
+        maxInnings = partidoData.maxInnings || 9;
+        
+        // Restaurar valores básicos
+        document.getElementById("fecha").value = partidoData.fecha || new Date().toISOString().split('T')[0];
+        document.getElementById("formato").value = partidoData.formato || "";
+        document.getElementById("numeroJuego").value = partidoData.numeroJuego || "";
+        
+        // Reconstruir la interfaz con los innings correctos en el resumen
+        reconstruirTablaResumen();
+        
+        // Restaurar nombres de equipos
+        document.getElementById("local-team-name").value = partidoData.localTeamName || "Local";
+        document.getElementById("visitante-team-name").value = partidoData.visitanteTeamName || "Visitante";
+        document.getElementById("lineup-local-name").value = partidoData.localTeamName || "Local";
+        document.getElementById("lineup-visitante-name").value = partidoData.visitanteTeamName || "Visitante";
+
+
+        // Reconstruir los lineups con los jugadores y sus innings guardados
+        if (partidoData.localLineup && partidoData.localLineup.length > 0) {
+            reconstruirLineupDesdeGuardado("lineup-local", partidoData.localLineup);
+        } else {
+            // Asegúrate de que el tbody esté vacío si no hay jugadores guardados
+            document.getElementById("lineup-local").querySelector("tbody").innerHTML = "";
+            reconstruirLineupInnings("lineup-local"); // Ensure header is correct even if tbody is empty
+        }
+        if (partidoData.visitanteLineup && partidoData.visitanteLineup.length > 0) {
+            reconstruirLineupDesdeGuardado("lineup-visitante", partidoData.visitanteLineup);
+        } else {
+            document.getElementById("lineup-visitante").querySelector("tbody").innerHTML = "";
+            reconstruirLineupInnings("lineup-visitante"); // Ensure header is correct even if tbody is empty
+        }
+        
+        // Actualizar el resumen después de cargar los innings de los lineups
+        actualizarResumen("lineup-local");
+        actualizarResumen("lineup-visitante");
+
+        actualizarRegistrosUI();
+      }
+    }
+
+    // NEW FUNCTION: Reconstructs lineup players and their innings from saved data
+    function reconstruirLineupDesdeGuardado(tablaId, savedLineup) {
+        const tbody = document.getElementById(tablaId).querySelector("tbody");
+        tbody.innerHTML = ""; // Clear existing rows
+
+        const jugadoresEnLocalStorage = JSON.parse(localStorage.getItem("jugadoresData")) || [];
+        const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
+
+        // Also update the table header for innings
+        const theadRow = document.getElementById(tablaId).querySelector("thead tr");
+        // Clear existing inning headers (keeping #, Jugador, Posicion, Delete)
+        while (theadRow.children.length > 4) { // Now 4 for the 4 fixed columns
+            theadRow.removeChild(theadRow.lastElementChild);
+        }
+        // Add new inning headers (up to maxInnings)
+        for (let i = 1; i <= maxInnings; i++) {
+            const newTh = document.createElement("th");
+            newTh.textContent = i;
+            theadRow.appendChild(newTh);
+        }
+
+
+        savedLineup.forEach((playerData, index) => {
+            const tr = document.createElement("tr");
+            const playerIndex = index + 1; // # column
+
+            let celdasIning = "";
+            for (let inning = 1; inning <= maxInnings; inning++) {
+                const labelText = playerData.innings[inning] || "";
+                celdasIning += `
+                    <td>
+                        <div class="ining-container">
+                            <select class="ining-select">
+                                <option value="">--</option>
+                                ${jugadasOptions}
+                            </select>
+                            <input type="number" class="ining-input" value="1" min="-999" max="999">
+                            <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${inning})"><i class="fas fa-save"></i> Guardar</button>
+                            <div class="ining-label">${labelText}</div>
+                        </div>
+                    </td>`;
+            }
+
+            const opcionesJugadores = jugadoresEnLocalStorage.map(j => 
+                `<option value="${j.nombre}" ${j.nombre === playerData.jugador ? 'selected' : ''}>${j.nombre}</option>`
+            ).join("");
+            const opcionesPosiciones = posiciones.map(p => 
+                `<option value="${p}" ${p === playerData.posicion ? 'selected' : ''}>${p}</option>`
+            ).join("");
+
+            tr.innerHTML = `
+                <td class="sticky-column-1">${playerIndex}</td>
+                <td class="sticky-column-2"><select class="jugador-select"><option value="">Seleccionar</option>${opcionesJugadores}</select></td>
+                <td class="sticky-column-3"><select class="posicion-select"><option value="">--</option>${opcionesPosiciones}</select></td>
+                <td class="sticky-column-delete">
+                    <button class="delete-player-btn" onclick="eliminarJugador(this, '${tablaId}')">X</button>
+                </td>
+                ${celdasIning}
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+
+    // Cargar datos al iniciar
+    window.onload = function() {
+      inicializarDatosEjemplo();
+      cargarFormatos();
+      cargarEstadoPartido();
+      
+      // Verificar si hay jugadas disponibles
+      const jugadas = obtenerJugadas();
+      if (jugadas.length === 0) {
+        console.warn("No se encontraron jugadas registradas. Por favor, agregue jugadas primero.");
+      }
+      
+      // Agregar evento para guardar antes de navegar
+      document.querySelector('a[href="index.html"]').addEventListener("click", function(e) {
+        guardarEstadoPartido();
+      });
+    };
+
+    // Guardar estado antes de cerrar la página
+    window.addEventListener("beforeunload", function(e) {
+      guardarEstadoPartido();
+    });
+  </script>
+</body>
+</html>

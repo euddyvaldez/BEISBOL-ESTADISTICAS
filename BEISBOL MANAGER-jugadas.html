@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jugadas - Liga Ñanguete</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+    :root {
+      --primary-color: #3f51b5; /* Deeper blue for primary actions/headers */
+      --secondary-color: #ff9800; /* Vibrant orange for accents */
+      --background-color: #f0f2f5; /* Light grey for softer background */
+      --text-color: #333;
+      --light-color: #fff;
+      --border-color: #e0e0e0; /* Softer border color */
+      --success-color: #4caf50;
+      --error-color: #f44336;
+      --info-color: #2196f3;
+      --warning-color: #ffc107; /* Brighter warning color */
+      --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      --shadow-medium: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--background-color);
+      margin: 0;
+      padding: 20px;
+      color: var(--text-color);
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--primary-color);
+      padding: 15px 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow-medium);
+      color: var(--light-color);
+      flex-wrap: wrap;
+    }
+
+    header img {
+      height: 65px;
+      filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+      margin-right: 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      color: var(--light-color);
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+      flex-grow: 1;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .header-button {
+      background-color: var(--light-color);
+      color: var(--primary-color);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 15px;
+    }
+
+    .header-button:hover {
+      background-color: var(--secondary-color);
+      color: var(--light-color);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .input-group, .search-edit {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      background: var(--light-color);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-light);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .input-group:hover, .search-edit:hover, .file-actions:hover {
+      transform: translateY(-3px);
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      flex: 1;
+      min-width: 150px;
+      font-size: 16px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      background-color: var(--background-color);
+    }
+
+    input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--primary-color);
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: var(--shadow-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background-color: #303f9f;
+      transform: translateY(-2px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background-color: var(--light-color);
+      margin-top: 20px;
+      box-shadow: var(--shadow-light);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px 10px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    th {
+      background-color: var(--primary-color);
+      color: var(--light-color);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    th:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #eef;
+      transform: scale(1.005);
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .actions i {
+      cursor: pointer;
+      margin: 0 8px;
+      color: var(--primary-color);
+      font-size: 1.1em;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .actions i:hover {
+      color: var(--secondary-color);
+      transform: scale(1.2);
+    }
+
+    .file-actions {
+      margin: 20px 0;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      background: var(--light-color);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-light);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .file-actions button {
+      background-color: var(--info-color);
+    }
+
+    .file-actions button:hover {
+      background-color: #1976d2;
+    }
+
+    #csvFile {
+      display: none;
+    }
+
+    /* Responsive Design (Media Queries) */
+    @media (max-width: 1024px) {
+      body {
+        padding: 15px;
+      }
+
+      header {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      header img {
+        margin-bottom: 10px;
+        margin-right: 0;
+      }
+
+      header h1 {
+        font-size: 26px;
+        margin-bottom: 10px;
+      }
+
+      .header-button {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+
+      .input-group, .search-edit, .file-actions {
+        padding: 20px;
+        margin-bottom: 25px;
+        flex-direction: column;
+      }
+
+      input[type="text"], input[type="number"] {
+        min-width: unset;
+        width: 100%;
+      }
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      table {
+        font-size: 13px;
+      }
+
+      th, td {
+        padding: 10px 5px;
+      }
+    }
+
+    @media (max-width: 767px) {
+      body {
+        padding: 10px;
+      }
+
+      header {
+        padding: 10px;
+      }
+
+      header img {
+        height: 50px;
+      }
+
+      header h1 {
+        font-size: 22px;
+      }
+
+      .header-button {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .input-group, .search-edit, .file-actions {
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      /* Make table cells scrollable horizontally if content overflows */
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      th, td {
+        min-width: 60px;
+        max-width: 120px;
+        box-sizing: border-box;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="BEISBOL ESTADISTICAS-LOGO.png" alt="Logo">
+    <h1>LIGA DE SOFTBALL ÑANGUETE</h1>
+    <a href="index.html"><button class="header-button"><i class="fas fa-home"></i> Inicio</button></a>
+  </header>
+
+  <div class="input-group">
+    <input type="text" id="jugada" placeholder="Nombre de la Jugada">
+    <input type="text" id="descripcion" placeholder="Descripción de la Jugada">
+    <button onclick="agregarJugada()"><i class="fas fa-plus"></i> Agregar Jugada</button>
+  </div>
+
+  <div class="search-edit">
+    <input type="text" id="buscar" placeholder="Buscar jugada por código, nombre o descripción" onkeyup="filtrarTabla()">
+    <button onclick="filtrarTabla()"><i class="fas fa-search"></i> Buscar</button>
+  </div>
+
+  <div class="file-actions">
+    <button onclick="exportarCSV()"><i class="fas fa-file-csv"></i> Exportar a CSV</button>
+    <button onclick="importarCSV()"><i class="fas fa-file-import"></i> Importar desde CSV</button>
+    <input type="file" id="csvFile" accept=".csv">
+  </div>
+
+  <table id="tablaJugadas">
+    <thead>
+      <tr>
+        <th>Cod.</th>
+        <th>Jugada</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    let jugadas = [];
+    let codigoActual = 1;
+
+    function guardarEnLocalStorage() {
+      localStorage.setItem("jugadasData", JSON.stringify(jugadas));
+      localStorage.setItem("codigoActual", codigoActual.toString());
+    }
+
+    function cargarDesdeLocalStorage() {
+      const data = localStorage.getItem("jugadasData");
+      if (data) {
+        jugadas = JSON.parse(data);
+        actualizarTabla();
+      }
+      const codigo = localStorage.getItem("codigoActual");
+      if (codigo) {
+        codigoActual = parseInt(codigo);
+      }
+    }
+
+    function agregarJugada() {
+      const jugada = document.getElementById('jugada').value.trim();
+      const descripcion = document.getElementById('descripcion').value.trim();
+
+      if (!jugada || !descripcion) {
+        alert('Completa todos los campos');
+        return;
+      }
+
+      const existe = jugadas.some(j => j.jugada.toLowerCase() === jugada.toLowerCase());
+      if (existe) {
+          alert('Esta jugada ya existe.');
+          return;
+      }
+
+      const nuevaJugada = {
+        codigo: codigoActual++,
+        jugada,
+        descripcion
+      };
+
+      jugadas.push(nuevaJugada);
+      actualizarTabla();
+      guardarEnLocalStorage();
+
+      document.getElementById('jugada').value = '';
+      document.getElementById('descripcion').value = '';
+    }
+
+    function actualizarTabla(jugadasAMostrar = jugadas) {
+      const tbody = document.querySelector('#tablaJugadas tbody');
+      tbody.innerHTML = '';
+
+      jugadasAMostrar.forEach(j => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${j.codigo}</td>
+          <td>${j.jugada}</td>
+          <td>${j.descripcion}</td>
+          <td class="actions">
+            <i class="fas fa-edit" onclick="editarJugada(${j.codigo})"></i>
+            <i class="fas fa-trash" onclick="eliminarJugada(${j.codigo})"></i>
+          </td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    function filtrarTabla() {
+      const termino = document.getElementById('buscar').value.toLowerCase().trim();
+      
+      if (termino === '') {
+        actualizarTabla();
+        return;
+      }
+
+      const resultados = jugadas.filter(j =>
+        j.codigo.toString().includes(termino) ||
+        j.jugada.toLowerCase().includes(termino) ||
+        j.descripcion.toLowerCase().includes(termino)
+      );
+      
+      actualizarTabla(resultados);
+    }
+
+    function editarJugada(codigo) {
+      const jugadaExistente = jugadas.find(j => j.codigo === codigo);
+      if (!jugadaExistente) return;
+
+      const nuevaJugadaNombre = prompt('Editar Nombre de Jugada:', jugadaExistente.jugada);
+      const nuevaDescripcion = prompt('Editar Descripción:', jugadaExistente.descripcion);
+
+      if (nuevaJugadaNombre !== null && nuevaDescripcion !== null) {
+        jugadaExistente.jugada = nuevaJugadaNombre.trim();
+        jugadaExistente.descripcion = nuevaDescripcion.trim();
+
+        actualizarTabla();
+        guardarEnLocalStorage();
+        filtrarTabla();
+      }
+    }
+
+    function eliminarJugada(codigo) {
+      if (confirm('¿Estás seguro de que deseas eliminar esta jugada?')) {
+        jugadas = jugadas.filter(j => j.codigo !== codigo);
+        actualizarTabla();
+        guardarEnLocalStorage();
+        filtrarTabla();
+      }
+    }
+
+    function exportarCSV() {
+      if (jugadas.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+      }
+
+      let csv = 'Código,Jugada,Descripción\n';
+      
+      jugadas.forEach(j => {
+        const safeJugada = `"${j.jugada.replace(/"/g, '""')}"`;
+        const safeDescripcion = `"${j.descripcion.replace(/"/g, '""')}"`;
+        csv += `${j.codigo},${safeJugada},${safeDescripcion}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `jugadas_ñanguete_${new Date().toISOString().slice(0,10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function importarCSV() {
+      document.getElementById('csvFile').click();
+    }
+
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const contents = e.target.result;
+        const lines = contents.split('\n');
+        
+        const hasHeader = lines.length > 0 && 
+                          lines[0].toLowerCase().includes('código') &&
+                          lines[0].toLowerCase().includes('jugada');
+        
+        const startLine = hasHeader ? 1 : 0;
+        
+        const nuevasJugadas = [];
+        let maxCodigo = 0;
+        
+        for (let i = startLine; i < lines.length; i++) {
+          if (lines[i].trim() === '') continue;
+          
+          const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+          const cleanValue = (val) => val ? val.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : '';
+
+          if (values.length >= 3) {
+            const codigo = parseInt(cleanValue(values[0]));
+            const jugada = cleanValue(values[1]);
+            const descripcion = cleanValue(values[2]);
+            
+            if (!isNaN(codigo) && jugada && descripcion) {
+                nuevasJugadas.push({
+                codigo,
+                jugada,
+                descripcion
+                });
+                
+                if (codigo > maxCodigo) {
+                maxCodigo = codigo;
+                }
+            }
+          }
+        }
+        
+        if (nuevasJugadas.length > 0) {
+          if (confirm(`¿Importar ${nuevasJugadas.length} jugadas? Esto reemplazará los datos actuales.`)) {
+            jugadas = nuevasJugadas;
+            codigoActual = maxCodigo + 1;
+            actualizarTabla();
+            guardarEnLocalStorage();
+            document.getElementById('buscar').value = '';
+            filtrarTabla();
+          }
+        } else {
+          alert('No se encontraron datos válidos en el archivo CSV');
+        }
+      };
+      
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    window.onload = cargarDesdeLocalStorage;
+  </script>
+</body>
+</html>

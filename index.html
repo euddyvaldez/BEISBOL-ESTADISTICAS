@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liga de Softball Ñanguete</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Importa una fuente diferente para el subtexto, por ejemplo, 'Open Sans' */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Open+Sans:wght@300;400;600&display=swap');
+
+        :root {
+            --primary-color: #3f51b5; /* Deeper blue for primary actions/headers */
+            --secondary-color: #ff9800; /* Vibrant orange for accents */
+            --background-color: #f0f2f5; /* Light grey for softer background */
+            --text-color: #333;
+            --light-color: #fff;
+            --border-color: #e0e0e0; /* Softer border color */
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --info-color: #2196f3;
+            --warning-color: #ffc107; /* Brighter warning color */
+            --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            --shadow-medium: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-color);
+            box-sizing: border-box;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--primary-color);
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-medium);
+            color: var(--light-color);
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 800px; /* Ajuste para un mejor control del ancho */
+        }
+
+        header img {
+            height: 65px;
+            filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+            margin-right: 15px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--light-color);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            flex-grow: 1;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .header-button {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 15px;
+        }
+
+        .header-button:hover {
+            background-color: var(--secondary-color);
+            color: var(--light-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .menu-button {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+            border: none;
+            padding: 25px 30px;
+            margin: 10px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.6rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-medium);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none; /* Para quitar el subrayado si es un <a> */
+        }
+
+        .menu-button:hover {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        /* MODIFICACIÓN: Ajuste de tamaño y fuente para el subtexto */
+        .menu-button .subtext {
+            font-size: 0.55em; /* Aún más pequeño */
+            font-family: 'Open Sans', sans-serif; /* Fuente diferente */
+            font-weight: 300; /* Un peso más ligero para el subtexto */
+            opacity: 0.6; /* Ligeramente más translúcido */
+            margin-bottom: 5px;
+            letter-spacing: 0.5px; /* Un poco de espaciado entre letras */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 767px) {
+            body {
+                padding: 10px;
+            }
+            header {
+                flex-direction: column;
+                padding: 10px;
+                margin-bottom: 20px;
+            }
+            header img {
+                height: 50px;
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+            header h1 {
+                font-size: 22px;
+                margin-bottom: 10px;
+            }
+            .header-button {
+                margin-left: 0;
+                margin-top: 10px;
+                width: 100%;
+                justify-content: center;
+            }
+            .menu-button {
+                padding: 20px 25px;
+                font-size: 1.4rem;
+            }
+            .menu-button .subtext {
+                font-size: 0.5em; /* Ajuste para pantallas pequeñas */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="BEISBOL ESTADISTICAS-LOGO.png" alt="Logo">
+        <h1 id="mainTitle">LIGA DE SOFTBALL ÑANGUETE</h1>
+        <button class="header-button" onclick="editarTitulo()"><i class="fas fa-edit"></i> Editar Título</button>
+    </header>
+
+    <button class="menu-button" onclick="location.href='BEISBOL MANAGER-Partidos.html'">
+        <span class="subtext">CONSULTAR || COMENZAR || EDITAR</span>
+        PARTIDOS
+    </button>
+
+    <button class="menu-button" onclick="location.href='BEISBOL MANAGER-jugadores.html'">
+        <span class="subtext">AGREGAR || ELIMINAR || EDITAR</span>
+        JUGADORES
+    </button>
+
+    <button class="menu-button" onclick="location.href='BEISBOL MANAGER-jugadas.html'">
+        <span class="subtext">AGREGAR || ELIMINAR || EDITAR</span>
+        JUGADAS<br>ESTADÍSTICAS
+    </button>
+
+    <button class="menu-button" onclick="location.href='BEISBOL MANAGER-formato.html'">
+        <span class="subtext">AGREGAR || ELIMINAR || EDITAR</span>
+        FORMATO DE JUEGO
+    </button>
+
+<script>
+    function guardarTitulo(titulo) {
+        localStorage.setItem('mainAppTitle', titulo);
+        document.getElementById('mainTitle').textContent = titulo;
+    }
+
+    function cargarTitulo() {
+        const savedTitle = localStorage.getItem('mainAppTitle');
+        if (savedTitle) {
+            document.getElementById('mainTitle').textContent = savedTitle;
+        } else {
+            document.getElementById('mainTitle').textContent = 'LIGA DE SOFTBALL ÑANGUETE';
+        }
+    }
+
+    function editarTitulo() {
+        let currentTitle = document.getElementById('mainTitle').textContent;
+        let newTitle = prompt('Introduce el nuevo título para la aplicación:', currentTitle);
+        if (newTitle !== null && newTitle.trim() !== '') {
+            guardarTitulo(newTitle.trim());
+        }
+    }
+
+    window.onload = cargarTitulo;
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registered: ', registration);
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+        });
+    }
+</script>
+</body>
+</html>

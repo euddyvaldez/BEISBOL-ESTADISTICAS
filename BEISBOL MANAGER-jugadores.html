@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agregar Jugadores - Liga Ñanguete</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+    :root {
+      --primary-color: #3f51b5; /* Deeper blue for primary actions/headers */
+      --secondary-color: #ff9800; /* Vibrant orange for accents */
+      --background-color: #f0f2f5; /* Light grey for softer background */
+      --text-color: #333;
+      --light-color: #fff;
+      --border-color: #e0e0e0; /* Softer border color */
+      --success-color: #4caf50;
+      --error-color: #f44336;
+      --info-color: #2196f3;
+      --warning-color: #ffc107; /* Brighter warning color */
+      --shadow-light: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+      --shadow-medium: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: var(--background-color);
+      margin: 0;
+      padding: 20px;
+      color: var(--text-color);
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: var(--primary-color);
+      padding: 15px 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow-medium);
+      color: var(--light-color);
+      flex-wrap: wrap;
+    }
+
+    header img {
+      height: 65px;
+      filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+      margin-right: 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+      color: var(--light-color);
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+      flex-grow: 1;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .header-button {
+      background-color: var(--light-color);
+      color: var(--primary-color);
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 15px;
+    }
+
+    .header-button:hover {
+      background-color: var(--secondary-color);
+      color: var(--light-color);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-medium);
+    }
+
+    .input-group, .search-edit {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      background: var(--light-color);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-light);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .input-group:hover, .search-edit:hover, .file-actions:hover {
+      transform: translateY(-3px);
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 12px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      flex: 1;
+      min-width: 150px;
+      font-size: 16px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      background-color: var(--background-color);
+    }
+
+    input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2);
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--primary-color);
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: var(--shadow-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background-color: #303f9f;
+      transform: translateY(-2px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background-color: var(--light-color);
+      margin-top: 20px;
+      box-shadow: var(--shadow-light);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 14px 10px;
+      border-bottom: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    th {
+      background-color: var(--primary-color);
+      color: var(--light-color);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    th:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #eef;
+      transform: scale(1.005);
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .actions i {
+      cursor: pointer;
+      margin: 0 8px;
+      color: var(--primary-color);
+      font-size: 1.1em;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .actions i:hover {
+      color: var(--secondary-color);
+      transform: scale(1.2);
+    }
+
+    .file-actions {
+      margin: 20px 0;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      background: var(--light-color);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-light);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .file-actions button {
+      background-color: var(--info-color);
+    }
+
+    .file-actions button:hover {
+      background-color: #1976d2;
+    }
+
+    #csvFile {
+      display: none;
+    }
+
+    /* Responsive Design (Media Queries) */
+    @media (max-width: 1024px) {
+      body {
+        padding: 15px;
+      }
+
+      header {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      header img {
+        margin-bottom: 10px;
+        margin-right: 0;
+      }
+
+      header h1 {
+        font-size: 26px;
+        margin-bottom: 10px;
+      }
+
+      .header-button {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+
+      .input-group, .search-edit, .file-actions {
+        padding: 20px;
+        margin-bottom: 25px;
+        flex-direction: column;
+      }
+
+      input[type="text"], input[type="number"] {
+        min-width: unset;
+        width: 100%;
+      }
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      table {
+        font-size: 13px;
+      }
+
+      th, td {
+        padding: 10px 5px;
+      }
+    }
+
+    @media (max-width: 767px) {
+      body {
+        padding: 10px;
+      }
+
+      header {
+        padding: 10px;
+      }
+
+      header img {
+        height: 50px;
+      }
+
+      header h1 {
+        font-size: 22px;
+      }
+
+      .header-button {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+
+      .input-group, .search-edit, .file-actions {
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      /* Make table cells scrollable horizontally if content overflows */
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      th, td {
+        min-width: 60px;
+        max-width: 120px;
+        box-sizing: border-box;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="BEISBOL ESTADISTICAS-LOGO.png" alt="Logo">
+    <h1>LIGA DE SOFTBALL ÑANGUETE</h1>
+    <a href="index.html"><button class="header-button"><i class="fas fa-home"></i> Inicio</button></a>
+  </header>
+
+  <div class="input-group">
+    <input type="text" id="nombre" placeholder="Tu Nombre y Apellido">
+    <input type="text" id="chaqueta" placeholder="Chaqueta">
+    <input type="number" id="numero" placeholder="#">
+    <input type="text" id="equipo" placeholder="Equipo" value="ÑANGUETE">
+    <button onclick="agregarJugador()"><i class="fas fa-plus"></i> Agregar Jugador</button>
+  </div>
+
+  <div class="search-edit">
+    <input type="text" id="buscar" placeholder="Buscar jugador por código, nombre, chaqueta o número" onkeyup="filtrarTabla()">
+    <button onclick="filtrarTabla()"><i class="fas fa-search"></i> Buscar</button> 
+  </div>
+
+  <div class="file-actions">
+    <button onclick="exportarCSV()"><i class="fas fa-file-csv"></i> Exportar a CSV</button>
+    <button onclick="importarCSV()"><i class="fas fa-file-import"></i> Importar desde CSV</button>
+    <input type="file" id="csvFile" accept=".csv">
+  </div>
+
+  <table id="tablaJugadores">
+    <thead>
+      <tr>
+        <th>Cod.</th>
+        <th>Nombre</th>
+        <th>Chaqueta</th>
+        <th>#</th>
+        <th>Equipo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    let jugadores = [];
+    let codigoActual = 1;
+
+    function guardarEnLocalStorage() {
+      localStorage.setItem("jugadoresData", JSON.stringify(jugadores));
+      localStorage.setItem("codigoActual", codigoActual.toString());
+    }
+
+    function cargarDesdeLocalStorage() {
+      const data = localStorage.getItem("jugadoresData");
+      if (data) {
+        jugadores = JSON.parse(data);
+        actualizarTabla(); // Mostrar todos los jugadores al cargar
+      }
+      const codigo = localStorage.getItem("codigoActual");
+      if (codigo) {
+        codigoActual = parseInt(codigo);
+      }
+    }
+
+    function agregarJugador() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const chaqueta = document.getElementById('chaqueta').value.trim();
+      const numero = document.getElementById('numero').value.trim();
+      const equipo = document.getElementById('equipo').value.trim();
+
+      if (!nombre || !chaqueta || !numero || !equipo) {
+        alert('Completa todos los campos');
+        return;
+      }
+
+      // Verificar si el jugador ya existe (por nombre y equipo, o por chaqueta/número)
+      const existe = jugadores.some(j => 
+          (j.nombre.toLowerCase() === nombre.toLowerCase() && j.equipo.toLowerCase() === equipo.toLowerCase()) ||
+          (j.chaqueta.toLowerCase() === chaqueta.toLowerCase() && j.numero === numero)
+      );
+
+      if (existe) {
+          alert('Este jugador (nombre/equipo o chaqueta/número) ya existe.');
+          return;
+      }
+
+      const jugador = {
+        codigo: codigoActual++,
+        nombre,
+        chaqueta,
+        numero,
+        equipo
+      };
+
+      jugadores.push(jugador);
+      actualizarTabla();
+      guardarEnLocalStorage();
+
+      document.getElementById('nombre').value = '';
+      document.getElementById('chaqueta').value = '';
+      document.getElementById('numero').value = '';
+    }
+
+    // `actualizarTabla` ahora recibe una lista opcional de jugadores a mostrar
+    function actualizarTabla(jugadoresAMostrar = jugadores) {
+      const tbody = document.querySelector('#tablaJugadores tbody');
+      tbody.innerHTML = '';
+
+      jugadoresAMostrar.forEach(jugador => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${jugador.codigo}</td>
+          <td>${jugador.nombre}</td>
+          <td>${jugador.chaqueta}</td>
+          <td>${jugador.numero}</td>
+          <td>${jugador.equipo}</td>
+          <td class="actions">
+            <i class="fas fa-edit" onclick="editarJugador(${jugador.codigo})"></i>
+            <i class="fas fa-trash" onclick="eliminarJugador(${jugador.codigo})"></i>
+          </td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    // La función `buscarJugador` se ha renombrado a `filtrarTabla` y modificado para filtrar la tabla
+    function filtrarTabla() {
+      const termino = document.getElementById('buscar').value.toLowerCase().trim();
+      
+      if (termino === '') {
+        actualizarTabla(); // Si el campo está vacío, mostrar todos los jugadores
+        return;
+      }
+
+      const resultados = jugadores.filter(j =>
+        j.codigo.toString().includes(termino) ||
+        j.nombre.toLowerCase().includes(termino) ||
+        j.chaqueta.toLowerCase().includes(termino) ||
+        j.numero.toString().includes(termino) ||
+        j.equipo.toLowerCase().includes(termino)
+      );
+      
+      actualizarTabla(resultados); // Actualizar la tabla con los resultados filtrados
+    }
+
+    function editarJugador(codigo) {
+      const jugador = jugadores.find(j => j.codigo === codigo);
+      if (!jugador) return;
+
+      const nuevoNombre = prompt('Editar Nombre:', jugador.nombre);
+      const nuevaChaqueta = prompt('Editar Chaqueta:', jugador.chaqueta);
+      const nuevoNumero = prompt('Editar Número:', jugador.numero);
+
+      if (nuevoNombre !== null && nuevaChaqueta !== null && nuevoNumero !== null) { // Comprobar si no se canceló el prompt
+        jugador.nombre = nuevoNombre.trim();
+        jugador.chaqueta = nuevaChaqueta.trim();
+        jugador.numero = nuevoNumero.trim();
+
+        actualizarTabla();
+        guardarEnLocalStorage();
+        filtrarTabla(); // Vuelve a aplicar el filtro si hay un término de búsqueda
+      }
+    }
+
+    function eliminarJugador(codigo) {
+      if (confirm('¿Estás seguro de que deseas eliminar este jugador?')) {
+        jugadores = jugadores.filter(j => j.codigo !== codigo);
+        actualizarTabla();
+        guardarEnLocalStorage();
+        filtrarTabla(); // Vuelve a aplicar el filtro si hay un término de búsqueda
+      }
+    }
+
+    function exportarCSV() {
+      if (jugadores.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+      }
+
+      // Encabezados CSV
+      let csv = 'Código,Nombre,Chaqueta,Número,Equipo\n';
+      
+      // Datos
+      jugadores.forEach(jugador => {
+        // Envolver campos con comas o espacios en comillas
+        const safeNombre = `"${jugador.nombre.replace(/"/g, '""')}"`;
+        const safeChaqueta = `"${jugador.chaqueta.replace(/"/g, '""')}"`;
+        const safeEquipo = `"${jugador.equipo.replace(/"/g, '""')}"`;
+        csv += `${jugador.codigo},${safeNombre},${safeChaqueta},${jugador.numero},${safeEquipo}\n`;
+      });
+
+      // Crear archivo y descargar
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `jugadores_ñanguete_${new Date().toISOString().slice(0,10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function importarCSV() {
+      document.getElementById('csvFile').click();
+    }
+
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const contents = e.target.result;
+        const lines = contents.split('\n');
+        
+        // Determinar si hay encabezado para saltarlo
+        const hasHeader = lines.length > 0 && 
+                          lines[0].toLowerCase().includes('código') &&
+                          lines[0].toLowerCase().includes('nombre');
+        
+        const startLine = hasHeader ? 1 : 0;
+        
+        const nuevosJugadores = [];
+        let maxCodigo = 0;
+        
+        for (let i = startLine; i < lines.length; i++) {
+          if (lines[i].trim() === '') continue;
+          
+          // Dividir la línea manejando comas dentro de comillas
+          const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+          
+          // Limpiar comillas si existen
+          const cleanValue = (val) => val ? val.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : '';
+          
+          if (values.length >= 5) {
+            const codigo = parseInt(cleanValue(values[0]));
+            const nombre = cleanValue(values[1]);
+            const chaqueta = cleanValue(values[2]);
+            const numero = cleanValue(values[3]);
+            const equipo = cleanValue(values[4]);
+            
+            if (!isNaN(codigo) && nombre && chaqueta && numero && equipo) {
+                nuevosJugadores.push({
+                codigo,
+                nombre,
+                chaqueta,
+                numero,
+                equipo
+                });
+                
+                if (codigo > maxCodigo) {
+                maxCodigo = codigo;
+                }
+            }
+          }
+        }
+        
+        if (nuevosJugadores.length > 0) {
+          if (confirm(`¿Importar ${nuevosJugadores.length} jugadores? Esto reemplazará los datos actuales.`)) {
+            jugadores = nuevosJugadores;
+            codigoActual = maxCodigo + 1;
+            actualizarTabla();
+            guardarEnLocalStorage();
+            document.getElementById('buscar').value = ''; // Limpiar campo de búsqueda después de importar
+            filtrarTabla(); // Asegurarse de que la tabla se actualice correctamente
+          }
+        } else {
+          alert('No se encontraron datos válidos en el archivo CSV');
+        }
+      };
+      
+      reader.readAsText(file);
+      e.target.value = ''; // Limpiar el valor del input file para poder importar el mismo archivo de nuevo
+    });
+
+    window.onload = cargarDesdeLocalStorage;
+  </script>
+</body>
+</html>
