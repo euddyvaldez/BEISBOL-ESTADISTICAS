@@ -117,6 +117,24 @@
     gap: 10px;
     font-weight: 700;
   }
+    /* Added for sticky lineup titles */
+  .lineup-header-container {
+    position: sticky;
+    top: 0; /* Or adjust if you have a sticky header above this */
+    z-index: 100; /* Ensure it stays on top */
+    background: var(--light-color); /* Match section container background */
+    padding-top: 15px; /* Add some padding if needed */
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color); /* Optional: a subtle border */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .lineup-header-container h2 {
+    margin: 0; /* Remove default margins */
+    border-bottom: none; /* Remove border as it's now on the container */
+  }
 
   .form-group {
     display: grid; /* Use CSS Grid for better control */
@@ -273,6 +291,15 @@
     background-color: var(--primary-color);
   }
 
+  /* Style for inning columns to hide them by default */
+  .inning-column {
+    display: none;
+  }
+
+  /* Style for the currently active inning column */
+  .inning-column.active {
+    display: table-cell;
+  }
 
   /* Ensure rows with even background color also apply to sticky cells */
   tr:nth-child(even) .sticky-column-1,
@@ -621,6 +648,43 @@
     transform: translateY(-2px);
   }
 
+  .inning-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 5px 0;
+    background-color: var(--background-color); /* Light background for navigation */
+    border-radius: 8px;
+  }
+
+  .inning-navigation button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+  }
+
+  .inning-navigation button:hover {
+    background-color: #303f9f;
+  }
+
+  .inning-navigation button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  .current-inning-display {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--primary-color);
+  }
+
   /* --- Responsive Design (Media Queries) --- */
 
   /* For Tablets and larger phones (e.g., 768px to 1024px) */
@@ -863,7 +927,14 @@
   </div>
 
   <div class="section-container">
-    <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-local-name" placeholder="Nombre local" onchange="actualizarNombreEquipoLineup('local')" /></h2>
+    <div class="lineup-header-container">
+      <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-local-name" placeholder="Nombre local" onchange="actualizarNombreEquipoLineup('local')" /></h2>
+      <div class="inning-navigation">
+        <button onclick="showPrevInning('lineup-local')"><i class="fas fa-chevron-left"></i></button>
+        <span class="current-inning-display" id="current-inning-local">Inning 1</span>
+        <button onclick="showNextInning('lineup-local')"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
     <div class="table-wrapper">
       <table id="lineup-local">
         <thead>
@@ -871,8 +942,8 @@
             <th class="sticky-column-1">#</th>
             <th class="sticky-column-2">Jugador</th>
             <th class="sticky-column-3">Posición</th>
-            <th class="sticky-column-delete"></th> <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
-          </tr>
+            <th class="sticky-column-delete"></th>
+            </tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -881,7 +952,14 @@
   </div>
 
   <div class="section-container">
-    <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-visitante-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoLineup('visitante')" /></h2>
+    <div class="lineup-header-container">
+      <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-visitante-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoLineup('visitante')" /></h2>
+      <div class="inning-navigation">
+        <button onclick="showPrevInning('lineup-visitante')"><i class="fas fa-chevron-left"></i></button>
+        <span class="current-inning-display" id="current-inning-visitante">Inning 1</span>
+        <button onclick="showNextInning('lineup-visitante')"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
     <div class="table-wrapper">
       <table id="lineup-visitante">
         <thead>
@@ -889,8 +967,8 @@
             <th class="sticky-column-1">#</th>
             <th class="sticky-column-2">Jugador</th>
             <th class="sticky-column-3">Posición</th>
-            <th class="sticky-column-delete"></th> <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th>
-          </tr>
+            <th class="sticky-column-delete"></th>
+            </tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -927,6 +1005,9 @@
     const posiciones = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
     let registrosJuego = [];
     let maxInnings = 9;
+    let currentInningLocal = 1; // Track current inning for local lineup
+    let currentInningVisitante = 1; // Track current inning for visitante lineup
+
     let partidoData = {
       fecha: "",
       formato: "",
@@ -934,7 +1015,9 @@
       localTeamName: "Local",
       visitanteTeamName: "Visitante",
       registros: [],
-      maxInnings: 9
+      maxInnings: 9,
+      currentInningLocal: 1, // Add to partidoData
+      currentInningVisitante: 1 // Add to partidoData
     };
 
     // Función para obtener las jugadas desde localStorage
@@ -1011,7 +1094,6 @@
       }
 
       const tr = document.createElement("tr");
-      // The index will now be the position in the table, not necessarily the # column value
       const index = tbody.rows.length + 1; 
 
       const opcionesJugadores = jugadoresData.map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
@@ -1020,15 +1102,19 @@
 
       let celdasIning = "";
       for (let i = 0; i < maxInnings; i++) {
+        const inningNumber = i + 1;
+        // Add inning-column class and active class based on current inning
+        const isActiveInning = (tablaId === 'lineup-local' && inningNumber === currentInningLocal) || 
+                               (tablaId === 'lineup-visitante' && inningNumber === currentInningVisitante);
         celdasIning += `
-          <td>
+          <td class="inning-column inning-${inningNumber} ${isActiveInning ? 'active' : ''}">
             <div class="ining-container">
               <select class="ining-select">
                 <option value="">--</option>
                 ${opcionesJugadas}
               </select>
               <input type="number" class="ining-input" value="1" min="-999" max="999">
-              <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${i+1})"><i class="fas fa-save"></i> Guardar</button>
+              <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${inningNumber})"><i class="fas fa-save"></i> Guardar</button>
               <div class="ining-label"></div>
             </div>
           </td>`;
@@ -1250,9 +1336,6 @@
         }
         
         registrosJuego = [];
-        // No limpiamos los tbody de los lineups aquí, sino que reconstruimos desde los registros.
-        // document.getElementById("lineup-local").querySelector("tbody").innerHTML = "";
-        // document.getElementById("lineup-visitante").querySelector("tbody").innerHTML = "";
         
         const headers = lines[0].split(",").map(h => h.trim());
         
@@ -1343,19 +1426,22 @@
           let celdasIning = "";
           const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
 
-          for (let inning = 1; inning <= maxInnings; inning++) {
-            const jugadasInning = datosJugador.innings[inning] || [];
+          for (let i = 1; i <= maxInnings; i++) {
+            const jugadasInning = datosJugador.innings[i] || [];
             const labelText = jugadasInning.map(j => `${j.cantidad}${j.jugada}`).join("+");
+
+            const currentInning = (tablaId === 'lineup-local' ? currentInningLocal : currentInningVisitante);
+            const isActiveInning = (i === currentInning);
             
             celdasIning += `
-              <td>
+              <td class="inning-column inning-${i} ${isActiveInning ? 'active' : ''}">
                 <div class="ining-container">
                   <select class="ining-select">
                     <option value="">--</option>
                     ${jugadasOptions}
                   </select>
                   <input type="number" class="ining-input" value="1" min="-999" max="999">
-                  <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${inning})"><i class="fas fa-save"></i> Guardar</button>
+                  <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${i})"><i class="fas fa-save"></i> Guardar</button>
                   <div class="ining-label">${labelText}</div>
                 </div>
               </td>`;
@@ -1380,6 +1466,9 @@
       
       actualizarResumen("lineup-local");
       actualizarResumen("lineup-visitante");
+      // Update inning display for both lineups
+      showInning('lineup-local', currentInningLocal);
+      showInning('lineup-visitante', currentInningVisitante);
     }
 
     function reconstruirTablaResumen() {
@@ -1443,6 +1532,8 @@
         for (let i = 1; i <= maxInnings; i++) {
             const newTh = document.createElement("th");
             newTh.textContent = i;
+            // Add class for inning headers too
+            newTh.classList.add('inning-column', `inning-${i}`);
             theadRow.appendChild(newTh);
         }
 
@@ -1451,6 +1542,8 @@
         tbodyRows.forEach(row => {
             for (let i = 1; i <= maxInnings; i++) {
                 const nuevaCelda = document.createElement("td");
+                // Add class for inning cells
+                nuevaCelda.classList.add('inning-column', `inning-${i}`);
                 nuevaCelda.innerHTML = `
                     <div class="ining-container">
                         <select class="ining-select">
@@ -1473,6 +1566,12 @@
             if (label) {
                 label.textContent = '0';
             }
+        }
+        // After rebuilding, ensure the current inning is displayed
+        if (tablaId === 'lineup-local') {
+          showInning('lineup-local', currentInningLocal);
+        } else {
+          showInning('lineup-visitante', currentInningVisitante);
         }
     }
 
@@ -1506,11 +1605,13 @@
         // Add new header for the inning
         const newInningTh = document.createElement("th");
         newInningTh.textContent = maxInnings;
+        newInningTh.classList.add('inning-column', `inning-${maxInnings}`); // Add class for new inning header
         theadRow.appendChild(newInningTh);
         
         // Add new cells for each player in the lineup
         tbodyRows.forEach(row => {
           const nuevaCelda = document.createElement("td");
+          nuevaCelda.classList.add('inning-column', `inning-${maxInnings}`); // Add class for new inning cell
           nuevaCelda.innerHTML = `
             <div class="ining-container">
               <select class="ining-select">
@@ -1524,6 +1625,12 @@
           `;
           row.appendChild(nuevaCelda);
         });
+        // After adding a new inning, re-display the current inning to hide the new one
+        if (lineupId === 'lineup-local') {
+          showInning('lineup-local', currentInningLocal);
+        } else {
+          showInning('lineup-visitante', currentInningVisitante);
+        }
       });
       
       guardarEstadoPartido();
@@ -1542,8 +1649,10 @@
         document.getElementById("lineup-local-name").value = "Local";
         document.getElementById("lineup-visitante-name").value = "Visitante";
         
-        // Resetear la cantidad máxima de innings a 9
+        // Resetear la cantidad máxima de innings a 9 y la inning actual a 1
         maxInnings = 9; 
+        currentInningLocal = 1;
+        currentInningVisitante = 1;
         
         // Reconstruir la tabla de resumen con 9 innings y reiniciar sus totales
         reconstruirTablaResumen();
@@ -1607,6 +1716,8 @@
         visitanteTeamName: document.getElementById("visitante-team-name").value,
         registros: registrosJuego,
         maxInnings: maxInnings,
+        currentInningLocal: currentInningLocal, // Save current inning
+        currentInningVisitante: currentInningVisitante, // Save current inning
         localLineup: localLineup, 
         visitanteLineup: visitanteLineup
       };
@@ -1620,6 +1731,8 @@
         partidoData = JSON.parse(savedData);
         registrosJuego = partidoData.registros || [];
         maxInnings = partidoData.maxInnings || 9;
+        currentInningLocal = partidoData.currentInningLocal || 1; // Load current inning
+        currentInningVisitante = partidoData.currentInningVisitante || 1; // Load current inning
         
         // Restaurar valores básicos
         document.getElementById("fecha").value = partidoData.fecha || new Date().toISOString().split('T')[0];
@@ -1677,6 +1790,7 @@
         for (let i = 1; i <= maxInnings; i++) {
             const newTh = document.createElement("th");
             newTh.textContent = i;
+            newTh.classList.add('inning-column', `inning-${i}`); // Add class for inning headers
             theadRow.appendChild(newTh);
         }
 
@@ -1688,8 +1802,11 @@
             let celdasIning = "";
             for (let inning = 1; inning <= maxInnings; inning++) {
                 const labelText = playerData.innings[inning] || "";
+                const currentInning = (tablaId === 'lineup-local' ? currentInningLocal : currentInningVisitante);
+                const isActiveInning = (inning === currentInning);
+
                 celdasIning += `
-                    <td>
+                    <td class="inning-column inning-${inning} ${isActiveInning ? 'active' : ''}">
                         <div class="ining-container">
                             <select class="ining-select">
                                 <option value="">--</option>
@@ -1720,6 +1837,64 @@
             `;
             tbody.appendChild(tr);
         });
+        // After rebuilding, ensure the current inning is displayed
+        if (tablaId === 'lineup-local') {
+          showInning('lineup-local', currentInningLocal);
+        } else {
+          showInning('lineup-visitante', currentInningVisitante);
+        }
+    }
+
+    // New functions for inning navigation
+    function showInning(tablaId, inningNum) {
+      const table = document.getElementById(tablaId);
+      if (!table) return;
+
+      // Update current inning variable
+      if (tablaId === 'lineup-local') {
+        currentInningLocal = inningNum;
+      } else {
+        currentInningVisitante = inningNum;
+      }
+
+      // Update inning display text
+      document.getElementById(`current-inning-${tablaId.replace('lineup-', '')}`).textContent = `Inning ${inningNum}`;
+
+      // Get all inning columns for this table (headers and cells)
+      const inningColumns = table.querySelectorAll('.inning-column');
+      inningColumns.forEach(col => {
+        const colInningNum = parseInt(col.classList.value.match(/inning-(\d+)/)[1]);
+        if (colInningNum === inningNum) {
+          col.classList.add('active');
+        } else {
+          col.classList.remove('active');
+        }
+      });
+      guardarEstadoPartido(); // Save state after changing inning
+    }
+
+    function showPrevInning(tablaId) {
+      if (tablaId === 'lineup-local') {
+        if (currentInningLocal > 1) {
+          showInning(tablaId, currentInningLocal - 1);
+        }
+      } else {
+        if (currentInningVisitante > 1) {
+          showInning(tablaId, currentInningVisitante - 1);
+        }
+      }
+    }
+
+    function showNextInning(tablaId) {
+      if (tablaId === 'lineup-local') {
+        if (currentInningLocal < maxInnings) {
+          showInning(tablaId, currentInningLocal + 1);
+        }
+      } else {
+        if (currentInningVisitante < maxInnings) {
+          showInning(tablaId, currentInningVisitante + 1);
+        }
+      }
     }
 
 
@@ -1729,6 +1904,10 @@
       cargarFormatos();
       cargarEstadoPartido();
       
+      // Verify initial inning display
+      showInning('lineup-local', currentInningLocal);
+      showInning('lineup-visitante', currentInningVisitante);
+
       // Verificar si hay jugadas disponibles
       const jugadas = obtenerJugadas();
       if (jugadas.length === 0) {
