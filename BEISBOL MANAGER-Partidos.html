@@ -336,6 +336,10 @@
     white-space: nowrap; /* Prevent wrapping inside select */
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
   }
+  .jugador-select option:disabled { /* MODIFIED: Added style for disabled player options */
+    color: #ccc;
+    background-color: #f9f9f9;
+  }
 
   .jugador-select:focus {
     border-color: var(--primary-color);
@@ -359,6 +363,10 @@
     background-size: 18px;
     cursor: pointer;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .posicion-select option:disabled {
+    color: #ccc;
+    background-color: #f9f9f9;
   }
 
   .posicion-select:focus {
@@ -1038,7 +1046,7 @@
       font-size: 12px; /* Smaller font */
     }
     .ining-select {
-      min-width: 60px; /* Even narrower */
+      min-width: 60px;
       padding: 4px; /* Even less padding */
       font-size: 12px; /* Smaller font */
       background-size: 14px; /* Smaller arrow */
@@ -1410,6 +1418,12 @@
       return [];
     }
 
+    // Función para obtener los jugadores desde localStorage
+    function obtenerJugadores() {
+        const jugadoresData = localStorage.getItem("jugadoresData");
+        return jugadoresData ? JSON.parse(jugadoresData) : [];
+    }
+
     // Inicializar localStorage con datos de ejemplo si está vacío
     function inicializarDatosEjemplo() {
       if (!localStorage.getItem("jugadasData")) {
@@ -1435,9 +1449,9 @@
         localStorage.setItem("jugadoresData", JSON.stringify([
           { nombre: "Juan Pérez", equipo: "Local" },
           { nombre: "Pedro González", equipo: "Local" },
-          { nombre: "María Fernández", equipo: "Local" }, // Added for testing
+          { nombre: "María Fernández", equipo: "Local", posicion: "P" }, // Added a pitcher for local
           { nombre: "Luis Rodríguez", equipo: "Visitante" },
-          { nombre: "Ana García", equipo: "Visitante" },
+          { nombre: "Ana García", equipo: "Visitante", posicion: "P" }, // Added a pitcher for visitante
           { nombre: "Carlos Sánchez", equipo: "Local" },
           { nombre: "Marta Díaz", equipo: "Visitante" }
         ]));
@@ -1466,10 +1480,105 @@
       }
     }
 
+    // --- MODIFICATION START: Position Management ---
+    function updatePositionAvailability(tablaId) {
+        const tabla = document.getElementById(tablaId);
+        if (!tabla) return;
+        const positionSelects = tabla.querySelectorAll("tbody .posicion-select");
+
+        const allSelectedNonDHPositionsInTable = new Set();
+        positionSelects.forEach(sel => {
+            if (sel.value && sel.value !== "DH" && sel.value !== "") {
+                allSelectedNonDHPositionsInTable.add(sel.value);
+            }
+        });
+
+        positionSelects.forEach(currentSelect => {
+            const currentValueInThisSelect = currentSelect.value;
+            Array.from(currentSelect.options).forEach(option => {
+                if (option.value === "" || option.value === "DH") {
+                    option.disabled = false; // Always enable placeholder and DH
+                } else {
+                    if (allSelectedNonDHPositionsInTable.has(option.value) && option.value !== currentValueInThisSelect) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                }
+            });
+        });
+    }
+
+    function initializePositionSelectListeners(tablaId) {
+        const tabla = document.getElementById(tablaId);
+        if (!tabla) return;
+        const positionSelects = tabla.querySelectorAll("tbody .posicion-select");
+
+        const changeHandler = function() { 
+            updatePositionAvailability(tablaId); 
+        };
+
+        positionSelects.forEach(select => {
+            if (select._myPositionChangeHandler) {
+                select.removeEventListener('change', select._myPositionChangeHandler);
+            }
+            select.addEventListener('change', changeHandler);
+            select._myPositionChangeHandler = changeHandler; 
+        });
+        updatePositionAvailability(tablaId); 
+    }
+    // --- MODIFICATION END: Position Management ---
+
+    // --- MODIFICATION START: Player Name Management ---
+    function updatePlayerNameAvailability() {
+        const allPlayerSelects = document.querySelectorAll("#lineup-local tbody .jugador-select, #lineup-visitante tbody .jugador-select");
+        const globallySelectedPlayerNames = new Set();
+
+        allPlayerSelects.forEach(select => {
+            if (select.value && select.value !== "") { 
+                globallySelectedPlayerNames.add(select.value);
+            }
+        });
+
+        allPlayerSelects.forEach(currentSelect => {
+            const currentValueInThisSelect = currentSelect.value;
+            Array.from(currentSelect.options).forEach(option => {
+                if (option.value === "") { 
+                    option.disabled = false;
+                } else {
+                    if (globallySelectedPlayerNames.has(option.value) && option.value !== currentValueInThisSelect) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                }
+            });
+        });
+    }
+
+    function initializePlayerNameSelectListeners() {
+        const allPlayerSelects = document.querySelectorAll("#lineup-local tbody .jugador-select, #lineup-visitante tbody .jugador-select");
+
+        const changeHandler = function() {
+            updatePlayerNameAvailability();
+        };
+
+        allPlayerSelects.forEach(select => {
+            if (select._myPlayerNameChangeHandler) {
+                select.removeEventListener('change', select._myPlayerNameChangeHandler);
+            }
+            select.addEventListener('change', changeHandler);
+            select._myPlayerNameChangeHandler = changeHandler;
+        });
+        updatePlayerNameAvailability(); 
+    }
+    // --- MODIFICATION END: Player Name Management ---
+
+
     function agregarJugador(tablaId) {
       const tabla = document.getElementById(tablaId);
       const tbody = tabla.querySelector("tbody");
-      const jugadoresData = JSON.parse(localStorage.getItem("jugadoresData")) || [];
+      const jugadoresData = obtenerJugadores();
       const jugadasData = obtenerJugadas();
       
       if (jugadasData.length === 0) {
@@ -1487,7 +1596,6 @@
       let celdasIning = "";
       for (let i = 0; i < maxInnings; i++) {
         const inningNumber = i + 1;
-        // Add inning-column class and active class based on current inning
         const isActiveInning = (inningNumber === currentInning);
         celdasIning += `
           <td class="inning-column inning-${inningNumber} ${isActiveInning ? 'active' : ''}">
@@ -1499,6 +1607,7 @@
               <input type="number" class="ining-input" value="1" min="-999" max="999">
               <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${inningNumber})"><i class="fas fa-save"></i> Guardar</button>
               <div class="ining-label"></div>
+              <input type="hidden" class="pitcher-name-input" value="">
             </div>
           </td>`;
       }
@@ -1513,7 +1622,9 @@
         ${celdasIning}
       `;
       tbody.appendChild(tr);
-      guardarEstadoPartido(); // Save state after adding a player
+      initializePositionSelectListeners(tablaId); 
+      initializePlayerNameSelectListeners(); // MODIFIED: Initialize player name availability
+      guardarEstadoPartido(); 
     }
 
     function eliminarJugador(btn, tablaId) {
@@ -1523,50 +1634,65 @@
 
         const rowToDelete = btn.closest("tr");
         const tbody = rowToDelete.parentElement;
-        const jugadorSelect = row.querySelector(".jugador-select");
+        const jugadorSelect = rowToDelete.querySelector(".jugador-select"); 
         const nombreJugadorEliminado = jugadorSelect ? jugadorSelect.value : "";
 
-        // Remove the row from the table
         tbody.removeChild(rowToDelete);
 
-        // Reindex the '#' column for remaining players
         Array.from(tbody.children).forEach((row, idx) => {
-            row.cells[0].textContent = idx + 1; // Update the # column
+            row.cells[0].textContent = idx + 1; 
         });
 
-        // Remove associated records from registrosJuego
+        const equipoDelLineup = tablaId.includes('local') ? 
+            (document.getElementById('lineup-local-name').value || 'Local') : 
+            (document.getElementById('lineup-visitante-name').value || 'Visitante');
+
         registrosJuego = registrosJuego.filter(registro => {
-            // Check if the record belongs to the team and the player being deleted
-            const equipoDelRegistro = (tablaId.includes('local') ? 
-                (document.getElementById('lineup-local-name').value || 'Local') : 
-                (document.getElementById('lineup-visitante-name').value || 'Visitante'));
-            
-            return !(registro.equipo === equipoDelRegistro && registro.jugador === nombreJugadorEliminado);
+            return !(
+                (registro.equipo === equipoDelLineup && registro.jugador === nombreJugadorEliminado) ||
+                (registro.pitcherResponsable === nombreJugadorEliminado) 
+            );
         });
 
         actualizarRegistrosUI();
-        actualizarResumenGlobal(); // Update all resumen stats
-        guardarEstadoPartido(); // Save the new state
+        actualizarResumenGlobal(); 
+        initializePositionSelectListeners(tablaId); 
+        initializePlayerNameSelectListeners(); // MODIFIED: Update player name availability
+        guardarEstadoPartido(); 
     }
 
+    function obtenerPitcherDelEquipo(equipoTablaId) {
+        const otroEquipoTablaId = (equipoTablaId === 'lineup-local') ? 'lineup-visitante' : 'lineup-local';
+        const tablaOtroEquipo = document.getElementById(otroEquipoTablaId);
+        const filasOtroEquipo = tablaOtroEquipo.querySelectorAll("tbody tr");
+        let pitcherNombre = "Desconocido";
+        for (const row of filasOtroEquipo) {
+            const posicionSelect = row.querySelector(".posicion-select");
+            const jugadorSelect = row.querySelector(".jugador-select");
+            if (posicionSelect && jugadorSelect && posicionSelect.value === "P") {
+                pitcherNombre = jugadorSelect.value;
+                break; 
+            }
+        }
+        return pitcherNombre;
+    }
 
     function guardarJugada(btn, tablaId, inning) {
       const container = btn.parentElement;
       const select = container.querySelector(".ining-select");
       const input = container.querySelector(".ining-input");
       const label = container.querySelector(".ining-label");
-      
+      const pitcherInput = container.querySelector(".pitcher-name-input");
       const jugada = select.value;
-      const cantidad = parseInt(input.value); // Ensure quantity is a number
-      
+      const cantidad = parseInt(input.value);
       if (jugada && !isNaN(cantidad)) {
+        const pitcherResponsable = obtenerPitcherDelEquipo(tablaId);
+        pitcherInput.value = pitcherResponsable;
         if (label.textContent) {
           label.textContent += `+${cantidad}${jugada}`;
         } else {
           label.textContent = `${cantidad}${jugada}`;
         }
-        
-        // Save the raw jugada and quantity for easier parsing later
         const row = btn.closest("tr");
         const jugadorSelect = row.querySelector(".jugador-select");
         const posicionSelect = row.querySelector(".posicion-select");
@@ -1575,7 +1701,6 @@
         const equipo = tablaId.includes("local") ? 
           document.getElementById("lineup-local-name").value || "Local" : 
           document.getElementById("lineup-visitante-name").value || "Visitante";
-        
         const registro = {
           fecha: document.getElementById("fecha").value,
           formato: document.getElementById("formato").value,
@@ -1584,59 +1709,47 @@
           jugador: jugador,
           posicion: posicion,
           inning: inning,
-          jugada: jugada, // Store the exact jugada code
+          jugada: jugada, 
           cantidad: cantidad,
+          pitcherResponsable: pitcherResponsable, 
           timestamp: new Date().toISOString()
         };
-        
         registrosJuego.push(registro);
-
-        // --- INICIO DE LA LÍNEA MODIFICADA ---
-        // Auto-increment outs if specific plays are recorded (O, AR, FS, P)
         if (['O', 'AR', 'FS', 'P'].includes(jugada)) { 
-            addOut(cantidad); // Increment outs by the recorded quantity
+            addOut(cantidad); 
         }
-        // --- FIN DE LA LÍNEA MODIFICADA ---
-        
-        // Reset select and input after saving
         select.value = "";
         input.value = "1";
-        
         actualizarRegistrosUI();
-        actualizarResumenGlobal(); // Update all resumen stats
+        actualizarResumenGlobal(); 
         guardarEstadoPartido();
       } else {
         alert("Por favor, seleccione una jugada y asegúrese de que la cantidad sea un número válido.");
       }
     }
 
-    // New function to update all summary statistics
     function actualizarResumenGlobal() {
       actualizarResumenIndividual("local");
       actualizarResumenIndividual("visitante");
       actualizarEstadisticasAdicionales();
     }
 
-    // Function to update individual team's runs
     function actualizarResumenIndividual(equipo) {
       const tablaId = `lineup-${equipo}`;
       const tabla = document.getElementById(tablaId);
-      if (!tabla) return; // Exit if table not found
-
+      if (!tabla) return; 
       const tbody = tabla.querySelector("tbody");
-      
       const sumasInnings = {};
       for (let i = 1; i <= maxInnings; i++) {
         sumasInnings[i] = 0;
       }
-      
       tbody.querySelectorAll("tr").forEach(row => {
-        for (let i = 4; i < 4 + maxInnings; i++) { // Inning cells start from index 4
+        for (let i = 4; i < 4 + maxInnings; i++) { 
           const cell = row.cells[i];
           if (cell) {
             const label = cell.querySelector(".ining-label");
             if (label && label.textContent) {
-              const regex = /([+-]?\d+)A/g; // Regex to find "XA" where X is a number
+              const regex = /([+-]?\d+)A/g; 
               let match;
               while ((match = regex.exec(label.textContent)) !== null) {
                 const inning = i - 3; 
@@ -1646,65 +1759,49 @@
           }
         }
       });
-      
       for (let inning = 1; inning <= maxInnings; inning++) {
         const label = document.getElementById(`${equipo}-${inning}`);
         if (label) {
           label.textContent = sumasInnings[inning] || "0";
         }
       }
-      
       const total = Object.values(sumasInnings).reduce((sum, val) => sum + val, 0);
       document.getElementById(`${equipo}-total`).textContent = total;
     }
 
-    // New function to update additional statistics (Hits, Errors, HR, K)
     function actualizarEstadisticasAdicionales() {
         const localTeamName = document.getElementById("lineup-local-name").value || "Local";
         const visitanteTeamName = document.getElementById("lineup-visitante-name").value || "Visitante";
-
-        let localHits = 0;
-        let visitanteHits = 0;
-        let localErrors = 0;
-        let visitanteErrors = 0;
-        let localHR = 0;
-        let visitanteHR = 0;
-        let localK = 0;
-        let visitanteK = 0;
+        let localHits = 0, visitanteHits = 0, localErrors = 0, visitanteErrors = 0;
+        let localHR = 0, visitanteHR = 0, localK = 0, visitanteK = 0;
 
         registrosJuego.forEach(registro => {
             const cantidad = parseInt(registro.cantidad);
             if (isNaN(cantidad)) return;
-
-            // Determine if the record is for the local or visiting team
             const isLocalTeam = registro.equipo === localTeamName;
             const isVisitanteTeam = registro.equipo === visitanteTeamName;
 
-            // Count Hits (H1, H2, H3, HR)
             if (['H1', 'H2', 'H3', 'HR'].includes(registro.jugada)) {
-                if (isLocalTeam) localHits += cantidad;
-                else if (isVisitanteTeam) visitanteHits += cantidad;
+                if (isLocalTeam) localHits += cantidad; else if (isVisitanteTeam) visitanteHits += cantidad;
             }
-            
-            // Count Home Runs (HR)
             if (registro.jugada === "HR") {
-                if (isLocalTeam) localHR += cantidad;
-                else if (isVisitanteTeam) visitanteHR += cantidad;
+                if (isLocalTeam) localHR += cantidad; else if (isVisitanteTeam) visitanteHR += cantidad;
             }
-
-            // Count Ponches (P)
-            if (registro.jugada === "P") { // Using 'P' for Ponche
-                if (isLocalTeam) localK += cantidad;
-                else if (isVisitanteTeam) visitanteK += cantidad;
+            if (registro.jugada === "P") { 
+                if (isLocalTeam) localK += cantidad; else if (isVisitanteTeam) visitanteK += cantidad;
             }
-
-            // Count Errors (E-D)
-            if (registro.jugada === "E-D") { // Using 'E-D' for Error
-                if (isLocalTeam) localErrors += cantidad;
-                else if (isVisitanteTeam) visitanteErrors += cantidad;
+            if (registro.jugada === "E-D") { 
+                if (isTopInning && !isVisitanteTeam) { // Visitor batting, local defending (error for local)
+                    localErrors += cantidad;
+                } else if (!isTopInning && !isLocalTeam) { // Local batting, visitor defending (error for visitor)
+                     visitanteErrors += cantidad;
+                } else if (isTopInning && isLocalTeam) { // Visitor batting, error on local player (counts for local)
+                    localErrors += cantidad;
+                } else if (!isTopInning && isVisitanteTeam) { // Local batting, error on visitor player (counts for visitor)
+                    visitanteErrors += cantidad;
+                }
             }
         });
-
         document.getElementById('local-hits').textContent = localHits;
         document.getElementById('visitante-hits').textContent = visitanteHits;
         document.getElementById('local-errors').textContent = localErrors;
@@ -1713,20 +1810,13 @@
         document.getElementById('visitante-hr').textContent = visitanteHR;
         document.getElementById('local-k').textContent = localK;
         document.getElementById('visitante-k').textContent = visitanteK;
-
-        // Update current inning status
         const inningStatusElement = document.getElementById('current-inning-status');
         if (inningStatusElement) {
             inningStatusElement.textContent = `${isTopInning ? 'Top' : 'Down'} ${currentInning}`;
         }
-        
-        // Update outs display
         document.getElementById('outs-display').textContent = outs;
-
-        // Update bases display
         updateBasesDisplay();
     }
-
 
     function actualizarNombreEquipoLineup(tipo) {
       const input = document.getElementById(`lineup-${tipo}-name`);
@@ -1739,7 +1829,7 @@
 
     function actualizarNombreEquipoResumen(tipo) {
       const input = document.getElementById(`${tipo}-team-name`);
-      const lineupInput = document.getElementById(`lineup-${tipo}-name`);
+      const lineupInput = document.getElementById(`lineup-${tipo}-name`); 
       if (input && lineupInput) {
         lineupInput.value = input.value;
       }
@@ -1749,13 +1839,11 @@
     function actualizarRegistrosUI() {
       const container = document.getElementById("registros-container");
       container.innerHTML = "";
-      
       registrosJuego.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
       registrosJuego.forEach(registro => {
         const registroElement = document.createElement("div");
         registroElement.className = "registro-item";
-        registroElement.textContent = `[${new Date(registro.timestamp).toLocaleTimeString()}] ${registro.equipo} - ${registro.jugador} (${registro.posicion}): Inning ${registro.inning} - ${registro.cantidad}${registro.jugada}`;
+        registroElement.textContent = `[${new Date(registro.timestamp).toLocaleTimeString()}] ${registro.equipo} - ${registro.jugador} (${registro.posicion}): Inning ${registro.inning} - ${registro.cantidad}${registro.jugada} (vs P: ${registro.pitcherResponsable || 'N/A'})`;
         container.appendChild(registroElement);
       });
     }
@@ -1765,21 +1853,20 @@
         alert("No hay registros para exportar");
         return;
       }
-      
-      const headers = Object.keys(registrosJuego[0]);
+      const allKeys = new Set();
+      registrosJuego.forEach(record => Object.keys(record).forEach(key => allKeys.add(key)));
+      const headers = Array.from(allKeys);
       let csv = headers.join(",") + "\n";
-      
       registrosJuego.forEach(registro => {
         const values = headers.map(header => {
-          let value = registro[header] || "";
+          let value = registro[header] || ""; 
           if (typeof value === "string" && value.includes(",")) {
-            value = `"${value}"`;
+            value = `"${value.replace(/"/g, '""')}"`; 
           }
           return value;
         });
         csv += values.join(",") + "\n";
       });
-      
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -1794,135 +1881,110 @@
     function importarJuegoCSV(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
       const reader = new FileReader();
       reader.onload = function(e) {
         const contents = e.target.result;
         const lines = contents.split("\n");
-        
         if (lines.length < 2) {
           alert("El archivo CSV no contiene datos válidos");
           return;
         }
-        
         registrosJuego = [];
-        
         const headers = lines[0].split(",").map(h => h.trim());
-        
         for (let i = 1; i < lines.length; i++) {
           if (!lines[i].trim()) continue;
-          
-          const values = lines[i].split(",").map(v => v.trim().replace(/^"(.*)"$/, '$1'));
+          const values = lines[i].split(",").map(v => v.trim().replace(/^"(.*)"$/, '$1').replace(/""/g, '"')); 
           const registro = {};
-          
           headers.forEach((header, index) => {
             registro[header] = values[index] || "";
+            if (header === 'cantidad' && !isNaN(parseInt(registro[header]))) {
+                registro[header] = parseInt(registro[header]);
+            }
           });
-          
           registrosJuego.push(registro);
         }
-        
         reconstruirDesdeRegistros();
         actualizarRegistrosUI();
         guardarEstadoPartido();
-        
         alert(`Se importaron ${registrosJuego.length} registros correctamente`);
       };
-      
       reader.readAsText(file);
       event.target.value = "";
     }
 
     function reconstruirDesdeRegistros() {
       if (registrosJuego.length === 0) {
-        reiniciarPartido(); // If no records, just reset the game
+        reiniciarPartido(); 
         return;
       }
-      
       const primerRegistro = registrosJuego[0];
       document.getElementById("fecha").value = primerRegistro.fecha || "";
       document.getElementById("formato").value = primerRegistro.formato || "";
       document.getElementById("numeroJuego").value = primerRegistro.numeroJuego || "";
-      
       const equipos = {};
-      
       registrosJuego.forEach(registro => {
-        if (!equipos[registro.equipo]) {
-          equipos[registro.equipo] = {};
-        }
-        
+        if (!equipos[registro.equipo]) equipos[registro.equipo] = {};
         if (!equipos[registro.equipo][registro.jugador]) {
-          equipos[registro.equipo][registro.jugador] = {
-            posicion: registro.posicion,
-            innings: {}
-          };
+          equipos[registro.equipo][registro.jugador] = { posicion: registro.posicion, innings: {} };
         }
-        
         if (!equipos[registro.equipo][registro.jugador].innings[registro.inning]) {
           equipos[registro.equipo][registro.jugador].innings[registro.inning] = [];
         }
-        
         equipos[registro.equipo][registro.jugador].innings[registro.inning].push({
-          jugada: registro.jugada,
-          cantidad: registro.cantidad
+          jugada: registro.jugada, cantidad: registro.cantidad, pitcherResponsable: registro.pitcherResponsable 
         });
       });
-      
-      // Actualizar maxInnings basado en los registros importados
-      maxInnings = Math.max(...registrosJuego.map(r => parseInt(r.inning)), 9);
-      
-      // Reconstruir tabla de resumen con los innings necesarios
+      maxInnings = Math.max(...registrosJuego.map(r => parseInt(r.inning)).filter(Number.isFinite), 9);
       reconstruirTablaResumen();
 
+      let firstTeamAssignedAsLocal = false;
       for (const equipoNombre in equipos) {
-        const esLocal = equipoNombre === partidoData.localTeamName || 
-                        (document.getElementById("lineup-local-name").value && 
-                         equipoNombre === document.getElementById("lineup-local-name").value);
-        
+          let esLocal = partidoData.localTeamName === equipoNombre || 
+                        (document.getElementById("lineup-local-name").value && equipoNombre === document.getElementById("lineup-local-name").value);
+
+          if (!partidoData.localTeamName && !document.getElementById("lineup-local-name").value && !firstTeamAssignedAsLocal) {
+              esLocal = true;
+              firstTeamAssignedAsLocal = true; 
+          } else if (!partidoData.visitanteTeamName && !document.getElementById("lineup-visitante-name").value && firstTeamAssignedAsLocal && !esLocal) {
+              // If local is already assigned, and this is a different team, it's visitor.
+          }
+
+
         const tablaId = esLocal ? "lineup-local" : "lineup-visitante";
         const nombreInputId = esLocal ? "lineup-local-name" : "lineup-visitante-name";
         const resumenInputId = esLocal ? "local-team-name" : "visitante-team-name";
         
         document.getElementById(nombreInputId).value = equipoNombre;
         document.getElementById(resumenInputId).value = equipoNombre;
-        
-        const tbody = document.getElementById(tablaId).querySelector("tbody");
-        tbody.innerHTML = ""; // Limpia las filas existentes antes de reconstruir
-        
-        const jugadoresEnLocalStorage = JSON.parse(localStorage.getItem("jugadoresData")) || [];
+        if (esLocal) partidoData.localTeamName = equipoNombre; else partidoData.visitanteTeamName = equipoNombre;
 
-        let playerIndex = 1; // For the '#' column
+        const tbody = document.getElementById(tablaId).querySelector("tbody");
+        tbody.innerHTML = ""; 
+        const jugadoresEnLocalStorage = obtenerJugadores();
+        let playerIndex = 1; 
         for (const jugadorNombre in equipos[equipoNombre]) {
           const datosJugador = equipos[equipoNombre][jugadorNombre];
           const tr = document.createElement("tr");
-          
           let celdasIning = "";
           const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
-
           for (let i = 1; i <= maxInnings; i++) {
             const jugadasInning = datosJugador.innings[i] || [];
             const labelText = jugadasInning.map(j => `${j.cantidad}${j.jugada}`).join("+");
-
-            const isActiveInning = (i === currentInning); // Use single currentInning
-            
+            const pitcherInThisInning = jugadasInning.length > 0 ? jugadasInning[jugadasInning.length - 1].pitcherResponsable : "";
+            const isActiveInning = (i === currentInning); 
             celdasIning += `
               <td class="inning-column inning-${i} ${isActiveInning ? 'active' : ''}">
                 <div class="ining-container">
-                  <select class="ining-select">
-                    <option value="">--</option>
-                    ${jugadasOptions}
-                  </select>
+                  <select class="ining-select"><option value="">--</option>${jugadasOptions}</select>
                   <input type="number" class="ining-input" value="1" min="-999" max="999">
                   <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${i})"><i class="fas fa-save"></i> Guardar</button>
                   <div class="ining-label">${labelText}</div>
+                  <input type="hidden" class="pitcher-name-input" value="${pitcherInThisInning}">
                 </div>
               </td>`;
           }
-          
           const opcionesJugadores = jugadoresEnLocalStorage.map(j => `<option value="${j.nombre}" ${j.nombre === jugadorNombre ? 'selected' : ''}>${j.nombre}</option>`).join("");
           const opcionesPosiciones = posiciones.map(p => `<option value="${p}" ${p === datosJugador.posicion ? 'selected' : ''}>${p}</option>`).join("");
-
-
           tr.innerHTML = `
             <td class="sticky-column-1">${playerIndex++}</td>
             <td class="sticky-column-2"><select class="jugador-select"><option value="">Seleccionar</option>${opcionesJugadores}</select></td>
@@ -1935,9 +1997,11 @@
           tbody.appendChild(tr);
         }
       }
-      
-      actualizarResumenGlobal(); // Call the global update
-      showInning(currentInning); // Update inning display for both lineups
+      initializePositionSelectListeners("lineup-local");   
+      initializePositionSelectListeners("lineup-visitante"); 
+      initializePlayerNameSelectListeners(); // MODIFIED: Initialize player name availability
+      actualizarResumenGlobal(); 
+      showInning(currentInning); 
     }
 
     function reconstruirTablaResumen() {
@@ -1945,9 +2009,6 @@
       const resumenThead = resumenTabla.querySelector("thead tr");
       const resumenTbodyLocal = resumenTabla.querySelector("tbody tr:first-child");
       const resumenTbodyVisitante = resumenTabla.querySelector("tbody tr:last-child");
-
-      // Clear existing inning headers and cells (except Team and Total)
-      // Iterate backwards to safely remove elements
       for (let i = resumenThead.children.length - 2; i > 0; i--) { 
         resumenThead.removeChild(resumenThead.children[i]);
       }
@@ -1957,232 +2018,169 @@
       for (let i = resumenTbodyVisitante.children.length - 2; i > 0; i--) {
         resumenTbodyVisitante.removeChild(resumenTbodyVisitante.children[i]);
       }
-
-      // Add new inning headers and cells
       for (let i = 1; i <= maxInnings; i++) {
         const th = document.createElement("th");
         th.textContent = i;
         resumenThead.insertBefore(th, resumenThead.lastElementChild);
-
         const localTd = document.createElement("td");
         localTd.innerHTML = `<div class="resumen-label" id="local-${i}">0</div>`;
         resumenTbodyLocal.insertBefore(localTd, resumenTbodyLocal.lastElementChild);
-
         const visitanteTd = document.createElement("td");
         visitanteTd.innerHTML = `<div class="resumen-label" id="visitante-${i}">0</div>`;
         resumenTbodyVisitante.insertBefore(visitanteTd, resumenTbodyVisitante.lastElementChild);
       }
-      
-      // Restore team names
       document.getElementById("local-team-name").value = partidoData.localTeamName || "Local";
       document.getElementById("visitante-team-name").value = partidoData.visitanteTeamName || "Visitante";
     }
 
-    // NEW FUNCTION: Rebuilds inning columns for existing players in a lineup
     function reconstruirLineupInnings(tablaId) {
         const tabla = document.getElementById(tablaId);
         const theadRow = tabla.querySelector("thead tr");
         const tbodyRows = tabla.querySelectorAll("tbody tr");
-
-        // 1. Remove all existing inning headers from thead (keep the first 4 static columns: #, Jugador, Posicion, Delete)
         const firstInningHeaderIndex = 4;
         while (theadRow.children.length > firstInningHeaderIndex) { 
             theadRow.removeChild(theadRow.lastElementChild); 
         }
-
-        // 2. Remove all existing inning cells from each player row (keep the first 4 static cells)
         tbodyRows.forEach(row => {
             while (row.children.length > 4) { 
                 row.removeChild(row.lastElementChild);
             }
         });
-
-        // 3. Add new inning headers (up to maxInnings)
         for (let i = 1; i <= maxInnings; i++) {
             const newTh = document.createElement("th");
             newTh.textContent = i;
-            // Add class for inning headers too
             newTh.classList.add('inning-column', `inning-${i}`);
             theadRow.appendChild(newTh);
         }
-
-        // 4. Add new, empty inning cells for each player row (up to maxInnings)
         const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
         tbodyRows.forEach(row => {
             for (let i = 1; i <= maxInnings; i++) {
                 const nuevaCelda = document.createElement("td");
-                // Add class for inning cells
                 nuevaCelda.classList.add('inning-column', `inning-${i}`);
                 nuevaCelda.innerHTML = `
                     <div class="ining-container">
-                        <select class="ining-select">
-                            <option value="">--</option>
-                            ${jugadasOptions}
-                        </select>
+                        <select class="ining-select"><option value="">--</option>${jugadasOptions}</select>
                         <input type="number" class="ining-input" value="1" min="-999" max="999">
                         <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${i})"><i class="fas fa-save"></i> Guardar</button>
                         <div class="ining-label"></div>
-                    </div>
-                `;
+                        <input type="hidden" class="pitcher-name-input" value=""></div>`;
                 row.appendChild(nuevaCelda);
             }
         });
-        // Important: Update totals to 0 after resetting innings
         actualizarResumenGlobal();
-        // After rebuilding, ensure the current inning is displayed for both
         showInning(currentInning);
+        updatePositionAvailability(tablaId); 
     }
 
     function agregarInning() {
       maxInnings++;
-      
-      // Add column to summary table header
       const resumenThead = document.querySelector("#resumen-container table thead tr");
       const newTh = document.createElement("th");
       newTh.textContent = maxInnings;
       resumenThead.insertBefore(newTh, resumenThead.lastElementChild);
-
-      // Add column to summary table rows for local and visitor teams
       const resumenLocalRow = document.querySelector("#resumen-container table tbody tr:first-child");
       const newLocalCell = document.createElement("td");
       newLocalCell.innerHTML = `<div class="resumen-label" id="local-${maxInnings}">0</div>`;
       resumenLocalRow.insertBefore(newLocalCell, resumenLocalRow.lastElementChild);
-
       const resumenVisitanteRow = document.querySelector("#resumen-container table tbody tr:last-child");
       const newVisitanteCell = document.createElement("td");
       newVisitanteCell.innerHTML = `<div class="resumen-label" id="visitante-${maxInnings}">0</div>`;
       resumenVisitanteRow.insertBefore(newVisitanteCell, resumenVisitanteRow.lastElementChild);
-      
-      // Add column to lineups
       const lineups = ["lineup-local", "lineup-visitante"];
       lineups.forEach(lineupId => {
         const tabla = document.getElementById(lineupId);
         const theadRow = tabla.querySelector("thead tr");
         const tbodyRows = tabla.querySelectorAll("tbody tr");
-
-        // Add new header for the inning
         const newInningTh = document.createElement("th");
         newInningTh.textContent = maxInnings;
-        newInningTh.classList.add('inning-column', `inning-${maxInnings}`); // Add class for new inning header
+        newInningTh.classList.add('inning-column', `inning-${maxInnings}`); 
         theadRow.appendChild(newInningTh);
-        
-        // Add new cells for each player in the lineup
         tbodyRows.forEach(row => {
           const nuevaCelda = document.createElement("td");
-          nuevaCelda.classList.add('inning-column', `inning-${maxInnings}`); // Add class for new inning cell
+          nuevaCelda.classList.add('inning-column', `inning-${maxInnings}`); 
           nuevaCelda.innerHTML = `
             <div class="ining-container">
-              <select class="ining-select">
-                <option value="">--</option>
-                ${obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("")}
-              </select>
+              <select class="ining-select"><option value="">--</option>${obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("")}</select>
               <input type="number" class="ining-input" value="1" min="-999" max="999">
               <button class="ining-guardar" onclick="guardarJugada(this, '${lineupId}', ${maxInnings})"><i class="fas fa-save"></i> Guardar</button>
               <div class="ining-label"></div>
-            </div>
-          `;
+              <input type="hidden" class="pitcher-name-input" value=""></div>`;
           row.appendChild(nuevaCelda);
         });
       });
-      // After adding a new inning, ensure the current inning is still displayed for both
       showInning(currentInning);
       guardarEstadoPartido();
     }
 
     function reiniciarPartido() {
       if (confirm("¿Estás seguro de que quieres reiniciar el partido? Se perderán todos los registros de jugadas, pero los jugadores en el lineup se mantendrán.")) {
-        // Limpiar todos los campos del formulario
         document.getElementById("fecha").value = new Date().toISOString().split('T')[0];
         document.getElementById("formato").value = "";
         document.getElementById("numeroJuego").value = "";
-        
-        // Reiniciar nombres de equipos
         document.getElementById("local-team-name").value = "Local";
         document.getElementById("visitante-team-name").value = "Visitante";
         document.getElementById("lineup-local-name").value = "Local";
         document.getElementById("lineup-visitante-name").value = "Visitante";
-        
-        // Resetear la cantidad máxima de innings a 9 y la inning actual a 1
         maxInnings = 9; 
         currentInning = 1;
         isTopInning = true;
-        outs = 0; // Reset outs
-        bases = [false, false, false]; // Reset bases
-        
-        // Reconstruir la tabla de resumen con 9 innings y reiniciar sus totales
+        outs = 0; 
+        bases = [false, false, false]; 
         reconstruirTablaResumen();
-
-        // Reiniciar los innings de los lineups de ambos equipos sin eliminar los jugadores
         reconstruirLineupInnings("lineup-local");
         reconstruirLineupInnings("lineup-visitante");
-        
-        // Limpiar registros del juego
         registrosJuego = [];
         document.getElementById("registros-container").innerHTML = "";
-        
-        // Actualizar el resumen global para reflejar el reinicio
-        actualizarResumenGlobal(); // This will reset all stats like hits, errors, HR, K
-        
-        // Guardar el estado "limpio" del partido
+        actualizarResumenGlobal(); 
+        initializePositionSelectListeners("lineup-local");   
+        initializePositionSelectListeners("lineup-visitante"); 
+        initializePlayerNameSelectListeners(); // MODIFIED: Initialize player name availability
         guardarEstadoPartido();
-        
         alert("Partido reiniciado. Puedes comenzar un nuevo partido.");
       }
     }
 
     function terminarPartido() {
-      if (registrosJuego.length > 0) {
-        exportarJuegoCSV();
-      }
-      
+      if (registrosJuego.length > 0) exportarJuegoCSV();
       reiniciarPartido();
       alert("Partido terminado y datos exportados. Campos limpiados para un nuevo partido.");
     }
 
     function guardarEstadoPartido() {
-      // Necesitamos guardar el estado de los lineups, incluyendo jugadores y sus innings
       const localLineupRows = Array.from(document.getElementById("lineup-local").querySelectorAll("tbody tr"));
       const visitanteLineupRows = Array.from(document.getElementById("lineup-visitante").querySelectorAll("tbody tr"));
-
       const parseLineupRow = (row) => { 
           const jugadorSelect = row.querySelector(".jugador-select");
           const posicionSelect = row.querySelector(".posicion-select");
           const jugador = jugadorSelect ? jugadorSelect.value : "";
           const posicion = posicionSelect ? posicionSelect.value : "";
-          
           const inningsData = {};
-          // Inning cells now start from index 4 (0,1,2,3 for static, 4 for 1st inning)
           for (let i = 4; i < row.cells.length; i++) {
-              const inningNum = i - 3; // Convert cell index to inning number (e.g., cell 4 is inning 1)
+              const inningNum = i - 3; 
               const label = row.cells[i].querySelector(".ining-label");
+              const pitcherInput = row.cells[i].querySelector(".pitcher-name-input"); 
               if (label && label.textContent) {
-                  inningsData[inningNum] = label.textContent;
+                  inningsData[inningNum] = {
+                    jugadas: label.textContent,
+                    pitcher: pitcherInput ? pitcherInput.value : "" 
+                  };
               }
           }
           return { jugador, posicion, innings: inningsData };
       };
-
       const localLineup = localLineupRows.map(row => parseLineupRow(row));
       const visitanteLineup = visitanteLineupRows.map(row => parseLineupRow(row));
-
-
       partidoData = {
         fecha: document.getElementById("fecha").value,
         formato: document.getElementById("formato").value,
         numeroJuego: document.getElementById("numeroJuego").value,
         localTeamName: document.getElementById("local-team-name").value,
         visitanteTeamName: document.getElementById("visitante-team-name").value,
-        registros: registrosJuego,
-        maxInnings: maxInnings,
-        currentInning: currentInning, // Save current inning
-        isTopInning: isTopInning, // Save top/down status
-        outs: outs, // Save outs
-        bases: bases, // Save bases
-        showDetails: document.getElementById('game-details-container').classList.contains('hidden') ? false : true,
-        localLineup: localLineup, 
-        visitanteLineup: visitanteLineup
+        registros: registrosJuego, maxInnings: maxInnings, currentInning: currentInning, 
+        isTopInning: isTopInning, outs: outs, bases: bases, 
+        showDetails: !document.getElementById('game-details-container').classList.contains('hidden'),
+        localLineup: localLineup, visitanteLineup: visitanteLineup
       };
-      
       localStorage.setItem("partidoEnCurso", JSON.stringify(partidoData));
     }
 
@@ -2194,45 +2192,31 @@
         maxInnings = partidoData.maxInnings || 9;
         currentInning = partidoData.currentInning || 1; 
         isTopInning = (typeof partidoData.isTopInning === 'boolean') ? partidoData.isTopInning : true;
-        outs = (typeof partidoData.outs === 'number') ? partidoData.outs : 0; // Ensure outs is correctly loaded
+        outs = (typeof partidoData.outs === 'number') ? partidoData.outs : 0; 
         bases = partidoData.bases || [false, false, false];
-        
-        // Restaurar valores básicos
         document.getElementById("fecha").value = partidoData.fecha || new Date().toISOString().split('T')[0];
         document.getElementById("formato").value = partidoData.formato || "";
         document.getElementById("numeroJuego").value = partidoData.numeroJuego || "";
-        
-        // Reconstruir la interfaz con los innings correctos en el resumen
         reconstruirTablaResumen();
-        
-        // Restaurar nombres de equipos
         document.getElementById("local-team-name").value = partidoData.localTeamName || "Local";
         document.getElementById("visitante-team-name").value = partidoData.visitanteTeamName || "Visitante";
         document.getElementById("lineup-local-name").value = partidoData.localTeamName || "Local";
         document.getElementById("lineup-visitante-name").value = partidoData.visitanteTeamName || "Visitante";
 
-
-        // Reconstruir los lineups con los jugadores y sus innings guardados
         if (partidoData.localLineup && partidoData.localLineup.length > 0) {
             reconstruirLineupDesdeGuardado("lineup-local", partidoData.localLineup);
         } else {
-            // Asegúrate de que el tbody esté vacío si no hay jugadores guardados
             document.getElementById("lineup-local").querySelector("tbody").innerHTML = "";
-            reconstruirLineupInnings("lineup-local"); // Ensure header is correct even if tbody is empty
+            reconstruirLineupInnings("lineup-local"); 
         }
         if (partidoData.visitanteLineup && partidoData.visitanteLineup.length > 0) {
             reconstruirLineupDesdeGuardado("lineup-visitante", partidoData.visitanteLineup);
         } else {
             document.getElementById("lineup-visitante").querySelector("tbody").innerHTML = "";
-            reconstruirLineupInnings("lineup-visitante"); // Ensure header is correct even if tbody is empty
+            reconstruirLineupInnings("lineup-visitante"); 
         }
-        
-        // Actualizar el resumen global después de cargar los innings de los lineups
         actualizarResumenGlobal();
-
         actualizarRegistrosUI();
-
-        // Set visibility of game details section
         const gameDetailsContainer = document.getElementById('game-details-container');
         if (partidoData.showDetails) {
             gameDetailsContainer.classList.remove('hidden');
@@ -2244,109 +2228,83 @@
       }
     }
 
-    // NEW FUNCTION: Reconstructs lineup players and their innings from saved data
     function reconstruirLineupDesdeGuardado(tablaId, savedLineup) {
         const tbody = document.getElementById(tablaId).querySelector("tbody");
-        tbody.innerHTML = ""; // Clear existing rows
-
-        const jugadoresEnLocalStorage = JSON.parse(localStorage.getItem("jugadoresData")) || [];
+        tbody.innerHTML = ""; 
+        const jugadoresEnLocalStorage = obtenerJugadores();
         const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
-
-        // Also update the table header for innings
         const theadRow = document.getElementById(tablaId).querySelector("thead tr");
-        // Clear existing inning headers (keeping #, Jugador, Posicion, Delete)
-        while (theadRow.children.length > 4) { // Now 4 for the 4 fixed columns
+        while (theadRow.children.length > 4) { 
             theadRow.removeChild(theadRow.lastElementChild);
         }
-        // Add new inning headers (up to maxInnings)
         for (let i = 1; i <= maxInnings; i++) {
             const newTh = document.createElement("th");
             newTh.textContent = i;
-            newTh.classList.add('inning-column', `inning-${i}`); // Add class for inning headers
+            newTh.classList.add('inning-column', `inning-${i}`); 
             theadRow.appendChild(newTh);
         }
-
-
         savedLineup.forEach((playerData, index) => {
             const tr = document.createElement("tr");
-            const playerIndex = index + 1; // # column
-
+            const playerIndex = index + 1; 
             let celdasIning = "";
             for (let inning = 1; inning <= maxInnings; inning++) {
-                const labelText = playerData.innings[inning] || "";
-                const isActiveInning = (inning === currentInning); // Use single currentInning
-
+                const inningDetails = playerData.innings[inning] || { jugadas: "", pitcher: "" };
+                const labelText = inningDetails.jugadas;
+                const pitcherName = inningDetails.pitcher;
+                const isActiveInning = (inning === currentInning); 
                 celdasIning += `
                     <td class="inning-column inning-${inning} ${isActiveInning ? 'active' : ''}">
                         <div class="ining-container">
-                            <select class="ining-select">
-                                <option value="">--</option>
-                                ${jugadasOptions}
-                            </select>
+                            <select class="ining-select"><option value="">--</option>${jugadasOptions}</select>
                             <input type="number" class="ining-input" value="1" min="-999" max="999">
                             <button class="ining-guardar" onclick="guardarJugada(this, '${tablaId}', ${inning})"><i class="fas fa-save"></i> Guardar</button>
                             <div class="ining-label">${labelText}</div>
-                        </div>
-                    </td>`;
+                            <input type="hidden" class="pitcher-name-input" value="${pitcherName}"></div></td>`;
             }
-
             const opcionesJugadores = jugadoresEnLocalStorage.map(j => 
                 `<option value="${j.nombre}" ${j.nombre === playerData.jugador ? 'selected' : ''}>${j.nombre}</option>`
             ).join("");
             const opcionesPosiciones = posiciones.map(p => 
                 `<option value="${p}" ${p === playerData.posicion ? 'selected' : ''}>${p}</option>`
             ).join("");
-
             tr.innerHTML = `
                 <td class="sticky-column-1">${playerIndex}</td>
                 <td class="sticky-column-2"><select class="jugador-select"><option value="">Seleccionar</option>${opcionesJugadores}</select></td>
                 <td class="sticky-column-3"><select class="posicion-select"><option value="">--</option>${opcionesPosiciones}</select></td>
                 <td class="sticky-column-delete">
-                    <button class="delete-player-btn" onclick="eliminarJugador(this, '${tablaId}')">X</button>
-                </td>
-                ${celdasIning}
-            `;
+                    <button class="delete-player-btn" onclick="eliminarJugador(this, '${tablaId}')">X</button></td>
+                ${celdasIning}`;
             tbody.appendChild(tr);
         });
-        // After rebuilding, ensure the current inning is displayed for both
         showInning(currentInning);
+        initializePositionSelectListeners(tablaId); 
+        // initializePlayerNameSelectListeners(); // Called globally after all reconstructions
     }
 
-    // Modified function for inning navigation
     function showInning(inningNum) {
-      // Update current inning variable
       currentInning = inningNum;
-
-      // Update inning display text for the *single* display element
       document.getElementById('current-inning-display').textContent = `Inning ${inningNum}`;
-
-      // Get all inning columns (headers and cells) for *both* tables
       const allInningColumns = document.querySelectorAll('#lineup-local .inning-column, #lineup-visitante .inning-column');
       allInningColumns.forEach(col => {
-        const colInningNum = parseInt(col.classList.value.match(/inning-(\d+)/)[1]);
-        if (colInningNum === inningNum) {
-          col.classList.add('active');
-        } else {
-          col.classList.remove('active');
+        const colInningNumMatch = col.className.match(/inning-(\d+)/);
+        if (colInningNumMatch) {
+            const colInningNum = parseInt(colInningNumMatch[1]);
+            if (colInningNum === inningNum) col.classList.add('active');
+            else col.classList.remove('active');
         }
       });
-      actualizarEstadisticasAdicionales(); // Update inning status display
-      guardarEstadoPartido(); // Save state after changing inning
+      actualizarEstadisticasAdicionales(); 
+      guardarEstadoPartido(); 
     }
 
     function showPrevInning() {
-      if (currentInning > 1) {
-        showInning(currentInning - 1);
-      }
+      if (currentInning > 1) showInning(currentInning - 1);
     }
 
     function showNextInning() {
-      if (currentInning < maxInnings) {
-        showInning(currentInning + 1);
-      }
+      if (currentInning < maxInnings) showInning(currentInning + 1);
     }
 
-    // NEW FUNCTIONS FOR GAME DETAILS
     function toggleGameDetails() {
         const detailsContainer = document.getElementById('game-details-container');
         const toggleButton = document.querySelector('.toggle-details-btn');
@@ -2364,39 +2322,33 @@
 
     function toggleTopDown() {
         isTopInning = !isTopInning;
-        outs = 0; // Reset outs when changing Top/Down
-        clearBases(); // Clear bases when changing Top/Down
-        actualizarEstadisticasAdicionales(); // Update the display
+        outs = 0; 
+        clearBases(); 
+        actualizarEstadisticasAdicionales(); 
         guardarEstadoPartido();
     }
 
-    // Modified addOut to accept quantity
     function addOut(quantity = 1) {
         outs += quantity;
         if (outs >= 3) {
-            outs = 0; // Reset outs after 3
-            clearBases(); // Clear bases after 3 outs
-            // Automatically advance to the next half-inning or inning
+            outs = 0; 
+            clearBases(); 
             if (isTopInning) {
-                isTopInning = false; // Switch to Down
+                isTopInning = false; 
             } else {
-                isTopInning = true; // Switch to Top
-                currentInning++; // Advance inning
-                if (currentInning > maxInnings) {
-                    // Optionally handle game end or add extra inning automatically
-                    // For now, let's just not go past maxInnings automatically
-                    currentInning = maxInnings; // Stay at maxInnings if no more innings added
-                }
-                showInning(currentInning); // Update inning display
+                isTopInning = true; 
+                currentInning++; 
+                if (currentInning > maxInnings) currentInning = maxInnings; 
+                showInning(currentInning); 
             }
         }
-        actualizarEstadisticasAdicionales(); // Update the display
+        actualizarEstadisticasAdicionales(); 
         guardarEstadoPartido();
     }
 
     function resetOuts() {
         outs = 0;
-        actualizarEstadisticasAdicionales(); // Update the display
+        actualizarEstadisticasAdicionales(); 
         guardarEstadoPartido();
     }
 
@@ -2407,7 +2359,7 @@
     }
 
     function toggleBase(baseNumber) {
-        bases[baseNumber - 1] = !bases[baseNumber - 1]; // Toggle true/false
+        bases[baseNumber - 1] = !bases[baseNumber - 1]; 
         updateBasesDisplay();
         guardarEstadoPartido();
     }
@@ -2418,28 +2370,25 @@
         guardarEstadoPartido();
     }
 
-    // Cargar datos al iniciar
     window.onload = function() {
       inicializarDatosEjemplo();
       cargarFormatos();
-      cargarEstadoPartido();
+      cargarEstadoPartido(); 
       
-      // Verify initial inning display (using the single currentInning variable)
-      showInning(currentInning);
+      initializePositionSelectListeners("lineup-local");   
+      initializePositionSelectListeners("lineup-visitante"); 
+      initializePlayerNameSelectListeners(); // MODIFIED: Initialize player name availability globally
 
-      // Verificar si hay jugadas disponibles
+      showInning(currentInning);
       const jugadas = obtenerJugadas();
       if (jugadas.length === 0) {
         console.warn("No se encontraron jugadas registradas. Por favor, agregue jugadas primero.");
       }
-      
-      // Agregar evento para guardar antes de navegar
       document.querySelector('a[href="index.html"]').addEventListener("click", function(e) {
         guardarEstadoPartido();
       });
     };
 
-    // Guardar estado antes de cerrar la página
     window.addEventListener("beforeunload", function(e) {
       guardarEstadoPartido();
     });
