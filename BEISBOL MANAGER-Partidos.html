@@ -1217,21 +1217,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td><input type="text" class="team-name-input" id="local-team-name" placeholder="Nombre local" onchange="actualizarNombreEquipoResumen('local')" /></td>
-            <td><div class="resumen-label" id="local-1">0</div></td>
-            <td><div class="resumen-label" id="local-2">0</div></td>
-            <td><div class="resumen-label" id="local-3">0</div></td>
-            <td><div class="resumen-label" id="local-4">0</div></td>
-            <td><div class="resumen-label" id="local-5">0</div></td>
-            <td><div class="resumen-label" id="local-6">0</div></td>
-            <td><div class="resumen-label" id="local-7">0</div></td>
-            <td><div class="resumen-label" id="local-8">0</div></td>
-            <td><div class="resumen-label" id="local-9">0</div></td>
-            <td class="total-cell"><strong id="local-total">0</strong></td>
-          </tr>
-          <tr>
-            <td><input type="text" class="team-name-input" id="visitante-team-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoResumen('visitante')" /></td>
+          <tr> <td><input type="text" class="team-name-input" id="visitante-team-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoResumen('visitante')" /></td>
             <td><div class="resumen-label" id="visitante-1">0</div></td>
             <td><div class="resumen-label" id="visitante-2">0</div></td>
             <td><div class="resumen-label" id="visitante-3">0</div></td>
@@ -1242,6 +1228,18 @@
             <td><div class="resumen-label" id="visitante-8">0</div></td>
             <td><div class="resumen-label" id="visitante-9">0</div></td>
             <td class="total-cell"><strong id="visitante-total">0</strong></td>
+          </tr>
+          <tr> <td><input type="text" class="team-name-input" id="local-team-name" placeholder="Nombre local" onchange="actualizarNombreEquipoResumen('local')" /></td>
+            <td><div class="resumen-label" id="local-1">0</div></td>
+            <td><div class="resumen-label" id="local-2">0</div></td>
+            <td><div class="resumen-label" id="local-3">0</div></td>
+            <td><div class="resumen-label" id="local-4">0</div></td>
+            <td><div class="resumen-label" id="local-5">0</div></td>
+            <td><div class="resumen-label" id="local-6">0</div></td>
+            <td><div class="resumen-label" id="local-7">0</div></td>
+            <td><div class="resumen-label" id="local-8">0</div></td>
+            <td><div class="resumen-label" id="local-9">0</div></td>
+            <td class="total-cell"><strong id="local-total">0</strong></td>
           </tr>
         </tbody>
       </table>
@@ -1285,26 +1283,26 @@
 
         <div class="game-detail-item">
             <strong>Hits (H)</strong>
-            <span>Local: <span id="local-hits">0</span></span>
             <span>Visitante: <span id="visitante-hits">0</span></span>
+            <span>Local: <span id="local-hits">0</span></span>
         </div>
 
         <div class="game-detail-item">
             <strong>Errores (E)</strong>
-            <span>Local: <span id="local-errors">0</span></span>
             <span>Visitante: <span id="visitante-errors">0</span></span>
+            <span>Local: <span id="local-errors">0</span></span>
         </div>
         
         <div class="game-detail-item">
             <strong>Jonrones (HR)</strong>
-            <span>Local: <span id="local-hr">0</span></span>
             <span>Visitante: <span id="visitante-hr">0</span></span>
+            <span>Local: <span id="local-hr">0</span></span>
         </div>
 
         <div class="game-detail-item">
             <strong>Ponches (K)</strong>
-            <span>Local: <span id="local-k">0</span></span>
             <span>Visitante: <span id="visitante-k">0</span></span>
+            <span>Local: <span id="local-k">0</span></span>
         </div>
     </div>
   </div>
@@ -1724,8 +1722,8 @@
     }
 
     function actualizarResumenGlobal() {
-      actualizarResumenIndividual("local");
       actualizarResumenIndividual("visitante");
+      actualizarResumenIndividual("local");
       actualizarEstadisticasAdicionales();
     }
 
@@ -1765,8 +1763,8 @@
     }
 
     function actualizarEstadisticasAdicionales() {
-        const localTeamName = document.getElementById("lineup-local-name").value || "Local";
         const visitanteTeamName = document.getElementById("lineup-visitante-name").value || "Visitante";
+        const localTeamName = document.getElementById("lineup-local-name").value || "Local";
         let localHits = 0, visitanteHits = 0, localErrors = 0, visitanteErrors = 0;
         let localHR = 0, visitanteHR = 0, localK = 0, visitanteK = 0;
 
