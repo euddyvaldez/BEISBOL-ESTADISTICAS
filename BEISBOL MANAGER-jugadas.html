@@ -4,7 +4,7 @@
   <link rel="manifest" href="manifest.json">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jugadas - Liga Ñanguete</title>
+  <title>Jugadas - <span id="dynamic-title">Liga de Softball Ñanguete</span></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -319,7 +319,7 @@
 <body>
   <header>
     <img src="BEISBOL ESTADISTICAS-LOGO.png" alt="Logo">
-    <h1>LIGA DE SOFTBALL ÑANGUETE</h1>
+    <h1>JUGADAS - <span id="dynamic-title">LIGA ÑANGUETE</span></h1>
     <a href="index.html"><button class="header-button"><i class="fas fa-home"></i> Inicio</button></a>
   </header>
 
@@ -357,6 +357,24 @@
     let jugadas = [];
     let codigoActual = 1;
 
+    // Jugadas por defecto
+    const jugadasPorDefecto = [
+      {codigo: 1, jugada: "A", descripcion: "ANOTACION"},
+      {codigo: 2, jugada: "H1", descripcion: "HIT"},
+      {codigo: 3, jugada: "H2", descripcion: "DOBLE"},
+      {codigo: 4, jugada: "H3", descripcion: "TRIPLE"},
+      {codigo: 5, jugada: "HR", descripcion: "HOME RUN"},
+      {codigo: 6, jugada: "H*E", descripcion: "HIT X ERROR"},
+      {codigo: 7, jugada: "BB", descripcion: "BASE X BOLA"},
+      {codigo: 8, jugada: "CI", descripcion: "CARRERAS IMPULSADAS"},
+      {codigo: 9, jugada: "P", descripcion: "PONCHE"},
+      {codigo: 10, jugada: "O", descripcion: "OUT"},
+      {codigo: 11, jugada: "FS", descripcion: "FLY DE SACRIFICIO"},
+      {codigo: 12, jugada: "BR", descripcion: "BASE ROBADA"},
+      {codigo: 13, jugada: "AR", descripcion: "ATRAPADO ROBANDO"},
+      {codigo: 14, jugada: "E-D", descripcion: "ERROR DEFENSIVO"}
+    ];
+
     function guardarEnLocalStorage() {
       localStorage.setItem("jugadasData", JSON.stringify(jugadas));
       localStorage.setItem("codigoActual", codigoActual.toString());
@@ -366,11 +384,23 @@
       const data = localStorage.getItem("jugadasData");
       if (data) {
         jugadas = JSON.parse(data);
+        // Encontrar el código más alto para establecer codigoActual
+        const maxCodigo = jugadas.reduce((max, j) => Math.max(max, j.codigo), 0);
+        codigoActual = maxCodigo + 1;
+        actualizarTabla();
+      } else {
+        // Si no hay datos en localStorage, cargar las jugadas por defecto
+        jugadas = [...jugadasPorDefecto];
+        codigoActual = 15; // El siguiente después del último código por defecto (14)
+        guardarEnLocalStorage();
         actualizarTabla();
       }
-      const codigo = localStorage.getItem("codigoActual");
-      if (codigo) {
-        codigoActual = parseInt(codigo);
+    }
+
+    function cargarTitulo() {
+      const savedTitle = localStorage.getItem('mainAppTitle');
+      if (savedTitle) {
+        document.getElementById('dynamic-title').textContent = savedTitle;
       }
     }
 
@@ -555,7 +585,10 @@
       e.target.value = '';
     });
 
-    window.onload = cargarDesdeLocalStorage;
+    window.onload = function() {
+      cargarDesdeLocalStorage();
+      cargarTitulo();
+    };
   </script>
 </body>
 </html>

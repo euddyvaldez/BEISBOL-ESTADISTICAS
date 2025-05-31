@@ -4,7 +4,7 @@
   <link rel="manifest" href="manifest.json">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agregar Jugadores - Liga Ñanguete</title>
+  <title>Jugadores - <span id="dynamic-title">Liga de Softball Ñanguete</span></title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
@@ -319,7 +319,7 @@
 <body>
   <header>
     <img src="BEISBOL ESTADISTICAS-LOGO.png" alt="Logo">
-    <h1>LIGA DE SOFTBALL ÑANGUETE</h1>
+    <h1>JUGADORES - <span id="dynamic-title">LIGA ÑANGUETE</span></h1>
     <a href="index.html"><button class="header-button"><i class="fas fa-home"></i> Inicio</button></a>
   </header>
 
@@ -590,7 +590,18 @@
       e.target.value = ''; // Limpiar el valor del input file para poder importar el mismo archivo de nuevo
     });
 
-    window.onload = cargarDesdeLocalStorage;
+    // Función para cargar el título dinámico
+    function cargarTituloDinamico() {
+      const savedTitle = localStorage.getItem('mainAppTitle') || 'LIGA DE SOFTBALL ÑANGUETE';
+      document.getElementById('dynamic-title').textContent = savedTitle;
+      document.title = `Jugadores - ${savedTitle}`;
+    }
+
+    // Modificar el window.onload para cargar ambas funciones
+    window.onload = function() {
+      cargarDesdeLocalStorage();
+      cargarTituloDinamico();
+    }
   </script>
 </body>
 </html>

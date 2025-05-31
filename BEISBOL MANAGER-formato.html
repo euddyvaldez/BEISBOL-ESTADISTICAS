@@ -102,6 +102,18 @@
       transform: translateY(-3px);
     }
 
+    /* Adjust input widths for the new layout */
+    .input-group textarea {
+        flex: 2; /* Make description wider */
+        min-width: 250px;
+    }
+
+    .input-group input[type="number"] {
+        flex: 0.5; /* Make innings input smaller */
+        min-width: 80px;
+        max-width: 150px;
+    }
+
     input[type="text"], input[type="number"], textarea {
       padding: 12px 15px;
       border-radius: 8px;
@@ -319,18 +331,18 @@
 <body>
   <header>
     <img src="BEISBOL ESTADISTICAS-LOGO.png" alt="Logo">
-    <h1>LIGA DE SOFTBALL ÑANGUETE</h1>
+    <h1 id="mainTitle">FORMATO DE JUEGO - LIGA DE SOFTBALL ÑANGUETE</h1>
     <a href="index.html"><button class="header-button"><i class="fas fa-home"></i> Inicio</button></a>
   </header>
 
   <div class="input-group">
-    <input type="text" id="formato" placeholder="Nombre del Formato">
     <textarea id="descripcion" placeholder="Descripción del Formato" rows="3"></textarea>
+    <input type="number" id="cantidadInning" placeholder="Cantidad de Inning" min="1" max="9">
     <button onclick="agregarFormato()"><i class="fas fa-plus"></i> Agregar Formato</button>
   </div>
 
   <div class="search-edit">
-    <input type="text" id="buscar" placeholder="Buscar formato por código, nombre o descripción" onkeyup="filtrarTabla()">
+    <input type="text" id="buscar" placeholder="Buscar formato por código, descripción o cantidad de inning" onkeyup="filtrarTabla()">
     <button onclick="filtrarTabla()"><i class="fas fa-search"></i> Buscar</button>
   </div>
 
@@ -344,8 +356,8 @@
     <thead>
       <tr>
         <th>Cod.</th>
-        <th>Formato</th>
-        <th>Descripción</th>
+        <th>Descripción Formato</th>
+        <th>Cantidad Inning</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -357,6 +369,13 @@
     let formatos = [];
     let codigoActual = 1;
 
+    function cargarTitulo() {
+      const savedTitle = localStorage.getItem('mainAppTitle');
+      if (savedTitle) {
+        document.getElementById('mainTitle').textContent = `FORMATO DE JUEGO - ${savedTitle}`;
+      }
+    }
+
     function guardarEnLocalStorage() {
       localStorage.setItem("formatosData", JSON.stringify(formatos));
       localStorage.setItem("formatoCodigoActual", codigoActual.toString());
@@ -366,7 +385,6 @@
       const data = localStorage.getItem("formatosData");
       if (data) {
         formatos = JSON.parse(data);
-        // Al cargar, siempre se aplica el filtro inicial (muestra todo si no hay texto en buscar)
         filtrarTabla(); 
       }
       const codigo = localStorage.getItem("formatoCodigoActual");
@@ -376,38 +394,35 @@
     }
 
     function agregarFormato() {
-      const formato = document.getElementById('formato').value.trim();
-      // CAMBIO: Eliminado el campo innings del DOM y de la lógica
       const descripcion = document.getElementById('descripcion').value.trim();
+      const cantidadInning = parseInt(document.getElementById('cantidadInning').value);
 
-      if (!formato || !descripcion) {
-        alert('Completa todos los campos');
+      if (!descripcion || isNaN(cantidadInning) || cantidadInning < 1 || cantidadInning > 9) {
+        alert('Por favor, completa la descripción y asegúrate que la cantidad de innings sea un número entre 1 y 9.');
         return;
       }
       
-      const existe = formatos.some(f => f.formato.toLowerCase() === formato.toLowerCase());
+      const existe = formatos.some(f => f.descripcion.toLowerCase() === descripcion.toLowerCase() && f.cantidadInning === cantidadInning);
       if (existe) {
-          alert('Este formato ya existe.');
+          alert('Este formato con la misma descripción y cantidad de innings ya existe.');
           return;
       }
 
       const nuevoFormato = {
         codigo: codigoActual++,
-        formato,
-        // CAMBIO: Eliminado el campo innings del objeto
-        descripcion
+        descripcion,
+        cantidadInning,
+        formato: `${descripcion} (${cantidadInning} innings)`  // <-- Añadimos este campo para mostrar en Partidos
       };
 
       formatos.push(nuevoFormato);
       guardarEnLocalStorage();
-      filtrarTabla(); // Actualiza la tabla manteniendo el filtro actual
+      filtrarTabla(); 
 
-      document.getElementById('formato').value = '';
-      // CAMBIO: Eliminado el reseteo del campo innings
       document.getElementById('descripcion').value = '';
+      document.getElementById('cantidadInning').value = '';
     }
 
-    // `actualizarTabla` ahora recibe la lista de formatos a mostrar (filtrados o todos)
     function actualizarTabla(formatosAMostrar) {
       const tbody = document.querySelector('#tablaFormatos tbody');
       tbody.innerHTML = '';
@@ -416,8 +431,8 @@
         const fila = document.createElement('tr');
         fila.innerHTML = `
           <td>${f.codigo}</td>
-          <td>${f.formato}</td>
           <td>${f.descripcion}</td>
+          <td>${f.cantidadInning}</td>
           <td class="actions">
             <i class="fas fa-edit" onclick="editarFormato(${f.codigo})"></i>
             <i class="fas fa-trash" onclick="eliminarFormato(${f.codigo})"></i>
@@ -427,40 +442,43 @@
       });
     }
 
-    // Función de filtrado que se ejecuta en cada pulsación de tecla en el campo de búsqueda
     function filtrarTabla() {
       const termino = document.getElementById('buscar').value.toLowerCase().trim();
       
       if (termino === '') {
-        actualizarTabla(formatos); // Si el campo está vacío, mostrar todos los formatos
+        actualizarTabla(formatos); 
         return;
       }
 
       const resultados = formatos.filter(f =>
         f.codigo.toString().includes(termino) ||
-        f.formato.toLowerCase().includes(termino) ||
-        // CAMBIO: Eliminado innings de la lógica de búsqueda
-        f.descripcion.toLowerCase().includes(termino)
+        f.descripcion.toLowerCase().includes(termino) ||
+        f.cantidadInning.toString().includes(termino)
       );
       
-      actualizarTabla(resultados); // Actualizar la tabla con los resultados filtrados
+      actualizarTabla(resultados); 
     }
 
     function editarFormato(codigo) {
       const formatoExistente = formatos.find(f => f.codigo === codigo);
       if (!formatoExistente) return;
 
-      const nuevoFormatoNombre = prompt('Editar Nombre del Formato:', formatoExistente.formato);
-      // CAMBIO: Eliminado el prompt de innings
-      const nuevaDescripcion = prompt('Editar Descripción:', formatoExistente.descripcion);
+      const nuevaDescripcion = prompt('Editar Descripción del Formato:', formatoExistente.descripcion);
+      if (nuevaDescripcion === null) return; // User cancelled
 
-      if (nuevoFormatoNombre !== null && nuevaDescripcion !== null) {
-        formatoExistente.formato = nuevoFormatoNombre.trim();
-        // CAMBIO: Eliminado la asignación de innings
+      let nuevaCantidadInning = prompt('Editar Cantidad de Inning (1-9):', formatoExistente.cantidadInning);
+      if (nuevaCantidadInning === null) return; // User cancelled
+
+      nuevaCantidadInning = parseInt(nuevaCantidadInning);
+
+      if (!isNaN(nuevaCantidadInning) && nuevaCantidadInning >= 1 && nuevaCantidadInning <= 9) {
         formatoExistente.descripcion = nuevaDescripcion.trim();
+        formatoExistente.cantidadInning = nuevaCantidadInning;
 
         guardarEnLocalStorage();
-        filtrarTabla(); // Llama a filtrarTabla para actualizar y mantener el filtro
+        filtrarTabla(); 
+      } else {
+        alert('Cantidad de Inning inválida. Por favor, ingresa un número entre 1 y 9.');
       }
     }
 
@@ -468,7 +486,7 @@
       if (confirm('¿Estás seguro de que deseas eliminar este formato?')) {
         formatos = formatos.filter(f => f.codigo !== codigo);
         guardarEnLocalStorage();
-        filtrarTabla(); // Llama a filtrarTabla para actualizar y mantener el filtro
+        filtrarTabla(); 
       }
     }
 
@@ -478,14 +496,11 @@
         return;
       }
 
-      // CAMBIO: Eliminado "Innings" del encabezado CSV
-      let csv = 'Código,Formato,Descripción\n';
+      let csv = 'Código,Descripción Formato,Cantidad Inning\n';
       
       formatos.forEach(f => {
-        const safeFormato = `"${f.formato.replace(/"/g, '""')}"`;
         const safeDescripcion = `"${f.descripcion.replace(/"/g, '""')}"`;
-        // CAMBIO: Eliminado f.innings del string CSV
-        csv += `${f.codigo},${safeFormato},${safeDescripcion}\n`;
+        csv += `${f.codigo},${safeDescripcion},${f.cantidadInning}\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -512,11 +527,10 @@
         const contents = e.target.result;
         const lines = contents.split('\n');
         
-        // Determinar si hay encabezado para saltarlo (ahora solo Código, Formato, Descripción)
         const hasHeader = lines.length > 0 && 
                           lines[0].toLowerCase().includes('código') &&
-                          lines[0].toLowerCase().includes('formato') &&
-                          lines[0].toLowerCase().includes('descripción');
+                          lines[0].toLowerCase().includes('descripción formato') &&
+                          lines[0].toLowerCase().includes('cantidad inning');
         
         const startLine = hasHeader ? 1 : 0;
         
@@ -529,18 +543,16 @@
           const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
           const cleanValue = (val) => val ? val.replace(/^"|"$/g, '').replace(/""/g, '"').trim() : '';
           
-          // CAMBIO: Se esperan solo 3 campos (Código, Formato, Descripción)
           if (values.length >= 3) { 
             const codigo = parseInt(cleanValue(values[0]));
-            const formato = cleanValue(values[1]);
-            // CAMBIO: Eliminado innings del parseo
-            const descripcion = cleanValue(values[2]);
+            const descripcion = cleanValue(values[1]);
+            const cantidadInning = parseInt(cleanValue(values[2]));
             
-            if (!isNaN(codigo) && formato && descripcion) {
+            if (!isNaN(codigo) && descripcion && !isNaN(cantidadInning) && cantidadInning >= 1 && cantidadInning <= 9) {
                 nuevosFormatos.push({
                 codigo,
-                formato,
-                descripcion // CAMBIO: Eliminado innings del objeto
+                descripcion,
+                cantidadInning
                 });
                 
                 if (codigo > maxCodigo) {
@@ -556,7 +568,7 @@
             codigoActual = maxCodigo + 1;
             guardarEnLocalStorage();
             document.getElementById('buscar').value = ''; 
-            filtrarTabla(); // Asegurarse de que la tabla se actualice correctamente
+            filtrarTabla(); 
           }
         } else {
           alert('No se encontraron datos válidos en el archivo CSV');
@@ -567,7 +579,10 @@
       e.target.value = ''; 
     });
 
-    window.onload = cargarDesdeLocalStorage;
+    window.onload = function() {
+      cargarDesdeLocalStorage();
+      cargarTitulo();
+    };
   </script>
 </body>
 </html>
