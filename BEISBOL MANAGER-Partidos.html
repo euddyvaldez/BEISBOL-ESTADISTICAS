@@ -1196,13 +1196,13 @@
   <div class="section-container">
     <div class="form-group">
       <label for="fecha"><i class="far fa-calendar-alt"></i> Fecha:</label>
-      <input type="date" id="fecha" />
+      <input type="date" id="fecha" onchange="checkFieldsAndToggleLineups()" />
   
       <label for="formato"><i class="fas fa-list-ol"></i> Formato:</label>
-      <select id="formato" onchange="cambiarFormato()"></select> <!-- Agregado onchange -->
+      <select id="formato" onchange="cambiarFormato(); checkFieldsAndToggleLineups();"></select>
   
       <label for="numeroJuego"><i class="fas fa-hashtag"></i> Número de juego:</label>
-      <input type="number" id="numeroJuego" min="1" />
+      <input type="number" id="numeroJuego" min="1" oninput="checkFieldsAndToggleLineups()" />
     </div>
   </div>
 
@@ -1308,7 +1308,7 @@
     </div>
   </div>
 
-  <div class="section-container" id="lineups-grouped-section">
+  <div class="section-container hidden" id="lineups-grouped-section">
     <div class="lineup-header-container">
       <h2><i class="fas fa-users"></i> Lineup - <input type="text" class="team-name-input" id="lineup-visitante-name" placeholder="Nombre visitante" onchange="actualizarNombreEquipoLineup('visitante')" /></h2>
       <div class="inning-navigation" style="display: none;">
@@ -1369,7 +1369,6 @@
       </button>
     </div>
     
-    <!-- Botones adicionales para Guardar Juego e Historial de Juegos -->
     <div class="action-buttons">
         <button class="action-button export-btn" onclick="guardarJuego()">
     <i class="fas fa-save"></i> Guardar Juego
@@ -1474,27 +1473,147 @@
       }
     }
 
-    function cambiarFormato() {
-      const select = document.getElementById("formato");
-      const selectedOption = select.options[select.selectedIndex];
-      const innings = selectedOption ? parseInt(selectedOption.dataset.innings) : 9;
-      
-      // Actualizar maxInnings y partidoData
-      maxInnings = innings;
-      partidoData.maxInnings = maxInnings;
-      
-      // Reconstruir la tabla resumen con los nuevos innings
-      reconstruirTablaResumen();
-      
-      // Reconstruir los lineups con los nuevos innings
-      reconstruirLineupInnings("lineup-local");
-      reconstruirLineupInnings("lineup-visitante");
-      
-      // Mostrar el inning actual (o el 1 si es mayor que el nuevo máximo)
-      showInning(currentInning <= maxInnings ? currentInning : 1);
-      
-      guardarEstadoPartido();
+    /**
+     * MODIFICACION #3: Función para verificar campos y mostrar/ocultar lineups.
+     */
+    function checkFieldsAndToggleLineups() {
+        const fecha = document.getElementById('fecha').value;
+        const formato = document.getElementById('formato').value;
+        const numeroJuego = document.getElementById('numeroJuego').value;
+        const lineupsSection = document.getElementById('lineups-grouped-section');
+
+        if (fecha && formato && numeroJuego) {
+            lineupsSection.classList.remove('hidden');
+        } else {
+            lineupsSection.classList.add('hidden');
+        }
     }
+
+    /**
+     * MODIFICACION #2: Función para eliminar una columna de inning de todas las tablas.
+     * @param {number} inningNum - El número del inning a eliminar.
+     */
+    function removerColumnaInning(inningNum) {
+        // Eliminar del header de la tabla de resumen
+        const resumenThead = document.querySelector("#resumen-container table thead tr");
+        // El primer hijo es 'Equipo', por lo que el inning N está en la posición N+1
+        if (resumenThead && resumenThead.children[inningNum]) {
+            resumenThead.children[inningNum].remove();
+        }
+
+        // Eliminar de las filas del cuerpo de la tabla de resumen
+        const resumenVisitanteRow = document.querySelector("#resumen-container table tbody tr:first-child");
+        if (resumenVisitanteRow && resumenVisitanteRow.children[inningNum]) {
+            resumenVisitanteRow.children[inningNum].remove();
+        }
+        const resumenLocalRow = document.querySelector("#resumen-container table tbody tr:last-child");
+        if (resumenLocalRow && resumenLocalRow.children[inningNum]) {
+            resumenLocalRow.children[inningNum].remove();
+        }
+
+        // Eliminar cabeceras y celdas de las tablas de lineup usando la clase
+        document.querySelectorAll(`.inning-column.inning-${inningNum}`).forEach(el => el.remove());
+    }
+
+    /**
+     * MODIFICACION #2: Función para agregar una columna de inning a todas las tablas.
+     * @param {number} inningNum - El número del inning a agregar.
+     */
+    function agregarColumnaInning(inningNum) {
+        // Agregar al header de la tabla de resumen
+        const resumenThead = document.querySelector("#resumen-container table thead tr");
+        if (resumenThead && resumenThead.lastElementChild) {
+            const newTh = document.createElement("th");
+            newTh.textContent = inningNum;
+            resumenThead.insertBefore(newTh, resumenThead.lastElementChild);
+        }
+
+        // Agregar a las filas de la tabla de resumen
+        const resumenTbodyVisitanteRow = document.querySelector("#resumen-container table tbody tr:first-child");
+        if (resumenTbodyVisitanteRow && resumenTbodyVisitanteRow.lastElementChild) {
+            const td = document.createElement("td");
+            td.innerHTML = `<div class="resumen-label" id="visitante-${inningNum}">0</div>`;
+            resumenTbodyVisitanteRow.insertBefore(td, resumenTbodyVisitanteRow.lastElementChild);
+        }
+        const resumenTbodyLocalRow = document.querySelector("#resumen-container table tbody tr:last-child");
+        if (resumenTbodyLocalRow && resumenTbodyLocalRow.lastElementChild) {
+            const td = document.createElement("td");
+            td.innerHTML = `<div class="resumen-label" id="local-${inningNum}">0</div>`;
+            resumenTbodyLocalRow.insertBefore(td, resumenTbodyLocalRow.lastElementChild);
+        }
+
+        // Agregar a las tablas de lineup
+        const lineups = ["lineup-local", "lineup-visitante"];
+        const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
+        lineups.forEach(lineupId => {
+            const tabla = document.getElementById(lineupId);
+            if (!tabla) return;
+            // Agregar header
+            const theadRow = tabla.querySelector("thead tr");
+            if (theadRow) {
+                const newInningTh = document.createElement("th");
+                newInningTh.textContent = inningNum;
+                newInningTh.classList.add('inning-column', `inning-${inningNum}`);
+                theadRow.appendChild(newInningTh);
+            }
+            // Agregar celdas a cada jugador
+            const tbodyRows = tabla.querySelectorAll("tbody tr");
+            tbodyRows.forEach(row => {
+                const nuevaCelda = document.createElement("td");
+                nuevaCelda.classList.add('inning-column', `inning-${inningNum}`);
+                nuevaCelda.innerHTML = `
+                <div class="ining-container">
+                  <select class="ining-select"><option value="">--</option>${jugadasOptions}</select>
+                  <input type="number" class="ining-input" value="1" min="-999" max="999">
+                  <button class="ining-guardar" onclick="guardarJugada(this, '${lineupId}', ${inningNum})"><i class="fas fa-save"></i> Guardar</button>
+                  <div class="ining-label"></div>
+                  <input type="hidden" class="pitcher-name-input" value="">
+                </div>`;
+                row.appendChild(nuevaCelda);
+            });
+        });
+    }
+
+    /**
+     * MODIFICACION #2: Función `cambiarFormato` modificada para no borrar datos.
+     */
+    function cambiarFormato() {
+        const select = document.getElementById("formato");
+        const selectedOption = select.options[select.selectedIndex];
+        if (!selectedOption || !selectedOption.dataset.innings) return;
+
+        const oldMaxInnings = maxInnings;
+        const newMaxInnings = parseInt(selectedOption.dataset.innings);
+
+        if (oldMaxInnings === newMaxInnings) return; // Sin cambios
+
+        // Ajustar columnas de forma dinámica
+        if (newMaxInnings < oldMaxInnings) {
+            // Eliminar columnas sobrantes
+            for (let i = oldMaxInnings; i > newMaxInnings; i--) {
+                removerColumnaInning(i);
+            }
+        } else {
+            // Añadir nuevas columnas
+            for (let i = oldMaxInnings + 1; i <= newMaxInnings; i++) {
+                agregarColumnaInning(i);
+            }
+        }
+
+        // Actualizar estado global
+        maxInnings = newMaxInnings;
+        partidoData.maxInnings = maxInnings;
+
+        // Si el inning actual queda fuera de rango, se ajusta al máximo
+        if (currentInning > maxInnings) {
+            showInning(maxInnings);
+        } else {
+            showInning(currentInning); // Para refrescar el estado 'active'
+        }
+
+        guardarEstadoPartido();
+    }
+
 
     function updatePositionAvailability(tablaId) {
         const tabla = document.getElementById(tablaId);
@@ -2079,54 +2198,9 @@ function importarJuegoCSV(event) {
 
     function agregarInning() {
       maxInnings++;
-      partidoData.maxInnings = maxInnings; // Sincronizar con partidoData
-      const resumenThead = document.querySelector("#resumen-container table thead tr");
-      const newTh = document.createElement("th");
-      newTh.textContent = maxInnings;
-      if (resumenThead && resumenThead.lastElementChild) resumenThead.insertBefore(newTh, resumenThead.lastElementChild);
-      else if (resumenThead) resumenThead.appendChild(newTh);
-
-      const resumenTbodyVisitanteRow = document.querySelector("#resumen-container table tbody tr:first-child");
-      const resumenTbodyLocalRow = document.querySelector("#resumen-container table tbody tr:last-child");
-      
-      if (resumenTbodyVisitanteRow && resumenTbodyVisitanteRow.lastElementChild) {
-        const td = document.createElement("td");
-        td.innerHTML = `<div class="resumen-label" id="visitante-${maxInnings}">0</div>`;
-        resumenTbodyVisitanteRow.insertBefore(td, resumenTbodyVisitanteRow.lastElementChild);
-      }
-      if (resumenTbodyLocalRow && resumenTbodyLocalRow.lastElementChild) {
-        const td = document.createElement("td");
-        td.innerHTML = `<div class="resumen-label" id="local-${maxInnings}">0</div>`;
-        resumenTbodyLocalRow.insertBefore(td, resumenTbodyLocalRow.lastElementChild);
-      }
-      
-      const lineups = ["lineup-local", "lineup-visitante"];
-      const jugadasOptions = obtenerJugadas().map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join("");
-      lineups.forEach(lineupId => {
-        const tabla = document.getElementById(lineupId);
-        if (!tabla) return;
-        const theadRow = tabla.querySelector("thead tr");
-        const tbodyRows = tabla.querySelectorAll("tbody tr");
-        if(theadRow) {
-            const newInningTh = document.createElement("th");
-            newInningTh.textContent = maxInnings;
-            newInningTh.classList.add('inning-column', `inning-${maxInnings}`); 
-            theadRow.appendChild(newInningTh);
-        }
-        tbodyRows.forEach(row => {
-          const nuevaCelda = document.createElement("td");
-          nuevaCelda.classList.add('inning-column', `inning-${maxInnings}`); 
-          nuevaCelda.innerHTML = `
-            <div class="ining-container">
-              <select class="ining-select"><option value="">--</option>${jugadasOptions}</select>
-              <input type="number" class="ining-input" value="1" min="-999" max="999">
-              <button class="ining-guardar" onclick="guardarJugada(this, '${lineupId}', ${maxInnings})"><i class="fas fa-save"></i> Guardar</button>
-              <div class="ining-label"></div>
-              <input type="hidden" class="pitcher-name-input" value=""></div>`;
-          row.appendChild(nuevaCelda);
-        });
-      });
-      showInning(currentInning); 
+      partidoData.maxInnings = maxInnings;
+      agregarColumnaInning(maxInnings);
+      showInning(currentInning);
       guardarEstadoPartido();
     }
 
@@ -2205,13 +2279,17 @@ function importarJuegoCSV(event) {
     }
 
 
-
+    /**
+     * MODIFICACION #1: Lógica del botón "Terminar Partido" corregida.
+     */
     function terminarPartido() {
-      if (registrosJuego.length > 0) {
-          exportarJuegoCSV();
-          guardarJuego(); // <- LLAMADA A guardarJuego() AÑADIDA AQUÍ
-      }
        if (confirm("¿Estás seguro de que quieres terminar el partido? Se exportarán los datos y se limpiará todo para un nuevo partido.")) {
+        // Las acciones ahora se ejecutan solo si el usuario confirma.
+        if (registrosJuego.length > 0) {
+            exportarJuegoCSV();
+            guardarJuego();
+        }
+        
         partidoData = { 
             fecha: new Date().toISOString().split('T')[0], formato: "", numeroJuego: "",
             localTeamName: "Local", visitanteTeamName: "Visitante",
@@ -2247,6 +2325,7 @@ function importarJuegoCSV(event) {
         initializePositionSelectListeners("lineup-local");   
         initializePositionSelectListeners("lineup-visitante"); 
         initializePlayerNameSelectListeners(); 
+        checkFieldsAndToggleLineups(); // Ocultar lineups ya que los campos se reiniciaron
         guardarEstadoPartido(); 
         alert("Partido terminado y datos exportados y guardados (si había). Campos limpiados para un nuevo partido.");
       }
@@ -2349,7 +2428,8 @@ function importarJuegoCSV(event) {
                 toggleButton.innerHTML = '<i class="fas fa-cog"></i> Mostrar Detalles Adicionales';
             }
         }
-        showInning(currentInning); 
+        showInning(currentInning);
+        checkFieldsAndToggleLineups(); // Verificar si los lineups deben mostrarse
       } else { 
         // Estado inicial si no hay datos guardados
         partidoData.localTeamName = "Local"; // Asegurar valores por defecto en partidoData
@@ -2484,7 +2564,7 @@ function importarJuegoCSV(event) {
                 isTopInning = true; 
                 currentInning++; 
                 if (currentInning > maxInnings && registrosJuego.length > 0) {
-                    // No agregar inning automáticamente, solo mostrar el último válido o el nuevo si se agregó manualmente.
+                    // No agregar inning automáticamente, solo mostrar el último válido o el nuevo si se agregó manually.
                 }
                 showInning(currentInning <= maxInnings ? currentInning : maxInnings); 
             }
@@ -2518,31 +2598,63 @@ function importarJuegoCSV(event) {
     }
 
 
-// FUNCION GUARDAR JUEGO
-function guardarJuego() {
-  const juegosGuardados = JSON.parse(localStorage.getItem("historialJuegos")) || [];
+    /**
+     * MODIFICACION: Genera una clave única para un juego basada en sus datos principales.
+     * @param {object} juegoData - El objeto del juego.
+     * @returns {string} La clave única generada.
+     */
+    function generarClaveUnicaJuego(juegoData) {
+        const fecha = juegoData.fecha || "sin-fecha";
+        const formato = juegoData.formato || "sin-formato";
+        const numero = juegoData.numeroJuego || "sin-numero";
+        const visitante = juegoData.equipoVisitante || "visitante";
+        const local = juegoData.equipoLocal || "local";
+        return `${fecha}_${formato}_${numero}_${visitante}_vs_${local}`.replace(/\s+/g, '-');
+    }
 
-  const juegoCompleto = {
-    fecha: document.getElementById("fecha").value || new Date().toLocaleDateString(),
-    formato: document.getElementById("formato").value || "Sin Formato",
-    numeroJuego: document.getElementById("numeroJuego").value || "N/A",
-    equipoLocal: partidoData.localTeamName || "Local",
-    equipoVisitante: partidoData.visitanteTeamName || "Visitante",
-    lineupLocal: obtenerLineupCompleto("lineup-local"),
-    lineupVisitante: obtenerLineupCompleto("lineup-visitante"),
-    registros: registrosJuego,
-    maxInnings: partidoData.maxInnings,
-    currentInning: partidoData.currentInning,
-    isTopInning: partidoData.isTopInning,
-    outs: partidoData.outs,
-    bases: partidoData.bases,
-    timestamp: new Date().toISOString()
-  };
+    /**
+     * MODIFICACION: Lógica de guardado con clave única y opción de reemplazo.
+     */
+    function guardarJuego() {
+        const juegosGuardados = JSON.parse(localStorage.getItem("historialJuegos")) || [];
 
-  juegosGuardados.push(juegoCompleto);
-  localStorage.setItem("historialJuegos", JSON.stringify(juegosGuardados));
-  alert("¡Juego guardado exitosamente en el historial!");
-}
+        const juegoCompleto = {
+            fecha: document.getElementById("fecha").value || new Date().toLocaleDateString('sv').slice(0, 10),
+            formato: document.getElementById("formato").value || "Sin Formato",
+            numeroJuego: document.getElementById("numeroJuego").value || "N/A",
+            equipoLocal: partidoData.localTeamName || "Local",
+            equipoVisitante: partidoData.visitanteTeamName || "Visitante",
+            lineupLocal: obtenerLineupCompleto("lineup-local"),
+            lineupVisitante: obtenerLineupCompleto("lineup-visitante"),
+            registros: registrosJuego,
+            maxInnings: partidoData.maxInnings,
+            currentInning: partidoData.currentInning,
+            isTopInning: partidoData.isTopInning,
+            outs: partidoData.outs,
+            bases: partidoData.bases,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Añadir la clave única al objeto del juego
+        juegoCompleto.idJuego = generarClaveUnicaJuego(juegoCompleto);
+
+        const indiceExistente = juegosGuardados.findIndex(j => j.idJuego === juegoCompleto.idJuego);
+
+        if (indiceExistente !== -1) {
+            // Si el juego ya existe, preguntar si se desea reemplazar
+            if (confirm('Ya existe un juego con estos datos. ¿Desea reemplazarlo?')) {
+                juegosGuardados[indiceExistente] = juegoCompleto;
+                localStorage.setItem("historialJuegos", JSON.stringify(juegosGuardados));
+                alert("¡Juego reemplazado exitosamente en el historial!");
+            }
+        } else {
+            // Si no existe, simplemente guardarlo
+            juegosGuardados.push(juegoCompleto);
+            localStorage.setItem("historialJuegos", JSON.stringify(juegosGuardados));
+            alert("¡Juego guardado exitosamente en el historial!");
+        }
+    }
+
 
 function obtenerLineupCompleto(tablaId) {
   const tabla = document.getElementById(tablaId);
@@ -2591,9 +2703,10 @@ function mostrarHistorialJuegos() {
 // FUNCION FINAL Y CORREGIDA: CARGAR JUEGO SELECCIONADO DESDE HISTORIAL
 function cargarJuegoSeleccionado() {
   // Leer el juego almacenado en localStorage
-  const juegoSeleccionado = JSON.parse(localStorage.getItem("juegoSeleccionado"));
-  if (!juegoSeleccionado) return; // Si no hay juego cargado, salir
-
+  const juegoSeleccionadoJSON = localStorage.getItem("juegoSeleccionado");
+  if (!juegoSeleccionadoJSON) return;
+  const juegoSeleccionado = JSON.parse(juegoSeleccionadoJSON);
+  
   // Cargar datos principales del partido
   document.getElementById("fecha").value = juegoSeleccionado.fecha || "";
   document.getElementById("formato").value = juegoSeleccionado.formato || "";
@@ -2614,46 +2727,21 @@ function cargarJuegoSeleccionado() {
   partidoData.bases = juegoSeleccionado.bases || [false, false, false];
 
   // Cargar lineups con su estructura
-  cargarLineup("lineup-local", juegoSeleccionado.lineupLocal);
-  cargarLineup("lineup-visitante", juegoSeleccionado.lineupVisitante);
+  reconstruirLineupDesdeGuardado("lineup-local", juegoSeleccionado.lineupLocal);
+  reconstruirLineupDesdeGuardado("lineup-visitante", juegoSeleccionado.lineupVisitante);
 
-  // Cargar jugadas detalladas de cada jugador e inning
-  if (juegoSeleccionado.registros) {
-    reconstruirJugadas(juegoSeleccionado.registros);
-  }
+    // Asignar los registros del juego cargado a la variable global
+    registrosJuego = juegoSeleccionado.registros || [];
 
   // Refrescar la interfaz del partido
   actualizarResumenGlobal();
   actualizarRegistrosUI();
+  checkFieldsAndToggleLineups(); // Verificar si los lineups deben mostrarse
 
   // Una vez cargado, eliminamos la clave temporal para evitar duplicados
   localStorage.removeItem("juegoSeleccionado");
 }
 
-function reconstruirJugadas(registros) {
-  registros.forEach(reg => {
-    const tablaId = reg.equipo === partidoData.localTeamName ? "lineup-local" : "lineup-visitante";
-    const tabla = document.getElementById(tablaId);
-    if (!tabla) return;
-
-    const filas = tabla.querySelectorAll("tbody tr");
-    filas.forEach(fila => {
-      const nombreJugador = fila.querySelector(".jugador-select")?.value;
-      if (nombreJugador === reg.jugador) {
-        const cell = fila.querySelector(`.inning-${reg.inning}`);
-        if (cell) {
-          const select = cell.querySelector(".ining-select");
-          const input = cell.querySelector(".ining-input");
-          const label = cell.querySelector(".ining-label");
-
-          if (select) select.value = reg.jugada || "";
-          if (input) input.value = reg.cantidad || "";
-          if (label) label.textContent = reg.resumen || "";
-        }
-      }
-    });
-  });
-}
 
 function cargarLineup(tablaId, lineupData) {
   const tabla = document.getElementById(tablaId);
@@ -2717,13 +2805,15 @@ function cargarLineup(tablaId, lineupData) {
       inicializarDatosEjemplo();
       cargarFormatos();
       cargarTituloDinamico();
-      document.getElementById("formato").addEventListener("change", cambiarFormato);
+      document.getElementById("formato").addEventListener("change", checkFieldsAndToggleLineups);
       cargarEstadoPartido(); // Esto reconstruye y actualiza todo
       
       initializePositionSelectListeners("lineup-local");   
       initializePositionSelectListeners("lineup-visitante"); 
       initializePlayerNameSelectListeners(); 
 
+      checkFieldsAndToggleLineups(); // Llamada inicial para ocultar/mostrar lineups
+      
       const jugadas = obtenerJugadas();
       if (jugadas.length === 0) console.warn("No se encontraron jugadas registradas.");
       

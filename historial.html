@@ -45,6 +45,14 @@
       background-color: #fb8c00;
     }
 
+    header input {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 200px;
+      margin-left: 20px;
+    }
+
     h2 {
       margin-top: 30px;
       font-size: 22px;
@@ -113,6 +121,7 @@
 <body>
   <header>
     <h1><i class="fas fa-history"></i> Historial de Juegos</h1>
+    <input type="text" id="searchInput" placeholder="Buscar juegos...">
     <a href="BEISBOL MANAGER-Partidos.html"><i class="fas fa-arrow-left"></i> Volver a Partidos</a>
   </header>
 
@@ -125,162 +134,90 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const historialContainer = document.getElementById("historial-container");
-      const historial = JSON.parse(localStorage.getItem("historialJuegos")) || [];
+      const searchInput = document.getElementById("searchInput");
+      let historial = JSON.parse(localStorage.getItem("historialJuegos")) || [];
 
-      if (historial.length === 0) {
-        historialContainer.innerHTML = '<div class="empty-message">No hay juegos guardados.</div>';
-        return;
-      }
+      function renderHistorial(filtro = "") {
+        historialContainer.innerHTML = "";
 
-      historialContainer.innerHTML = ''; 
-      const historialRevertido = [...historial].reverse(); 
-
-      historialRevertido.forEach((juego, indexEnRevertido) => {
-        const item = document.createElement("div");
-        item.className = "historial-item";
-
-        console.log(`Juego Data (forEach):`, JSON.parse(JSON.stringify(juego))); // Loguear una copia profunda
-        console.log(`Procesando equipo visitante: '${juego.equipoVisitante}' (Tipo: ${typeof juego.equipoVisitante}) para el juego ${juego.numeroJuego || indexEnRevertido}`);
-        console.log(`Registros para equipo visitante (${juego.equipoVisitante}):`, JSON.parse(JSON.stringify(juego.registros || [])));
-
-        const carrerasVisitante = sumarCarreras(juego.registros, juego.equipoVisitante, `Visitante ${juego.equipoVisitante}`);
-        const carrerasLocal = sumarCarreras(juego.registros, juego.equipoLocal, `Local ${juego.equipoLocal}`);
-
-        item.innerHTML = `
-          <div>
-            <strong>${juego.equipoVisitante || 'Visitante'}</strong> vs <strong>${juego.equipoLocal || 'Local'}</strong>
-            <br><small><i class="fas fa-calendar-alt"></i> ${juego.fecha || 'N/A'} | <i class="fas fa-th-large"></i> ${juego.formato || 'N/A'} | <i class="fas fa-hashtag"></i> Juego ${juego.numeroJuego || 'N/A'}</small>
-          </div>
-          <div>
-            <span>${carrerasVisitante} - ${carrerasLocal}</span>
-            <button class="delete-btn" data-id="${juego.id || indexEnRevertido}"><i class="fas fa-trash"></i> Eliminar</button>
-          </div>
-        `;
-        
-        item.addEventListener("click", (e) => {
-          if (e.target.closest(".delete-btn")) return; 
-          localStorage.setItem("juegoSeleccionado", JSON.stringify(juego));
-          window.location.href = "BEISBOL MANAGER-Partidos.html";
+        const filtrados = historial.filter(juego => {
+          const texto = `${juego.equipoLocal} ${juego.equipoVisitante} ${juego.fecha} ${juego.formato} ${juego.numeroJuego}`.toLowerCase();
+          return texto.includes(filtro.toLowerCase());
         });
 
-        historialContainer.appendChild(item);
-      });
+        if (filtrados.length === 0) {
+          historialContainer.innerHTML = '<div class="empty-message">No hay juegos que coincidan con la búsqueda.</div>';
+          if (historial.length === 0) {
+             historialContainer.innerHTML = '<div class="empty-message">No hay juegos guardados en el historial.</div>';
+          }
+          return;
+        }
 
+        // Mostrar los más recientes primero
+        filtrados.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        filtrados.forEach((juego) => {
+          const item = document.createElement("div");
+          item.className = "historial-item";
+          // Asignar el ID único al elemento para la carga
+          item.dataset.idJuego = juego.idJuego;
+
+          item.innerHTML = `
+            <div>
+              <strong>${juego.equipoVisitante}</strong> vs <strong>${juego.equipoLocal}</strong>
+              <br><small><i class="fas fa-calendar-alt"></i> ${juego.fecha} | <i class="fas fa-th-large"></i> ${juego.formato} | <i class="fas fa-hashtag"></i> Juego ${juego.numeroJuego}</small>
+            </div>
+            <div>
+              <span>${sumarCarreras(juego.registros, juego.equipoVisitante)} - ${sumarCarreras(juego.registros, juego.equipoLocal)}</span>
+              <button class="delete-btn" data-id-juego="${juego.idJuego}"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+          `;
+
+          historialContainer.appendChild(item);
+        });
+      }
+
+      // MODIFICACIÓN: Lógica de carga y eliminación centralizada en el contenedor
       historialContainer.addEventListener("click", (e) => {
-        const deleteButton = e.target.closest(".delete-btn");
-        if (deleteButton) {
-          const idJuegoAEliminar = deleteButton.getAttribute("data-id");
-          eliminarJuegoDelHistorial(idJuegoAEliminar);
+        const item = e.target.closest(".historial-item");
+        const deleteBtn = e.target.closest(".delete-btn");
+
+        if (deleteBtn) {
+            // Lógica para eliminar
+            e.stopPropagation(); // Evita que se dispare el click de carga
+            const juegoId = deleteBtn.getAttribute("data-id-juego");
+            if (confirm("¿Estás seguro de que deseas eliminar este juego del historial?")) {
+                // Filtrar el array original `historial`
+                historial = historial.filter(j => j.idJuego !== juegoId);
+                localStorage.setItem("historialJuegos", JSON.stringify(historial));
+                renderHistorial(searchInput.value); // Volver a renderizar
+            }
+        } else if (item) {
+            // Lógica para cargar
+            const juegoId = item.getAttribute("data-id-juego");
+            const juegoACargar = historial.find(j => j.idJuego === juegoId);
+            
+            if (juegoACargar) {
+                if (confirm("¿Desea cargar este partido? Los datos que tenga en la sección de partidos se perderán si no los ha guardado.")) {
+                    localStorage.setItem("juegoSeleccionado", JSON.stringify(juegoACargar));
+                    window.location.href = "BEISBOL MANAGER-Partidos.html";
+                }
+            }
         }
       });
+      
+      searchInput.addEventListener("input", () => {
+        renderHistorial(searchInput.value);
+      });
 
-      function eliminarJuegoDelHistorial(idJuego) {
-        let historialOriginal = JSON.parse(localStorage.getItem("historialJuegos")) || [];
-        const indiceNumerico = parseInt(idJuego, 10); 
-
-        const esPotencialmenteIdUnico = isNaN(indiceNumerico) || historialOriginal.some(j => String(j.id) === String(idJuego));
-
-        if (esPotencialmenteIdUnico) {
-            const historialAntes = historialOriginal.length;
-            historialOriginal = historialOriginal.filter(j => String(j.id) !== String(idJuego));
-            if (historialOriginal.length === historialAntes && !isNaN(indiceNumerico)) {
-                 // Si no se eliminó por ID y era un número, intentar por índice.
-                 // Esto es un fallback, idealmente los IDs son únicos y distintos de los índices.
-                 const indiceOriginalReal = JSON.parse(localStorage.getItem("historialJuegos")).length - 1 - indiceNumerico;
-                 if (indiceOriginalReal >= 0 && indiceOriginalReal < historialAntes) {
-                    historialOriginal = JSON.parse(localStorage.getItem("historialJuegos")) || []; // Recargar
-                    historialOriginal.splice(indiceOriginalReal, 1);
-                 } else {
-                    console.warn("No se pudo eliminar por ID y el índice tampoco fue válido:", idJuego);
-                    return;
-                 }
-            } else if (historialOriginal.length === historialAntes) {
-                 console.warn("No se pudo eliminar por ID (no encontrado o no numérico y no coincidió):", idJuego);
-                 return;
-            }
-        } else if (!isNaN(indiceNumerico)) {
-            const historialAntes = historialOriginal.length;
-            const indiceOriginalReal = historialAntes - 1 - indiceNumerico;
-            if (indiceOriginalReal >= 0 && indiceOriginalReal < historialAntes) {
-                historialOriginal.splice(indiceOriginalReal, 1);
-            } else {
-                console.warn("Índice para eliminar no válido:", idJuego, "Índice calculado:", indiceOriginalReal);
-                return; 
-            }
-        } else {
-            console.error("No se pudo determinar cómo eliminar el juego. ID o índice no encontrado/válido:", idJuego);
-            return;
-        }
-        
-        localStorage.setItem("historialJuegos", JSON.stringify(historialOriginal));
-        location.reload();
+      function sumarCarreras(registros, equipo) {
+        if (!registros) return 0;
+        return registros
+          .filter(r => r.equipo === equipo && r.jugada === 'A')
+          .reduce((sum, r) => sum + (parseInt(r.cantidad) || 0), 0);
       }
 
-     /**
-      * Suma las carreras para un equipo específico a partir de los registros del juego.
-      * @param {Array<Object>} registros - Array de objetos de registro del juego.
-      * @param {string} equipo - Nombre del equipo para el cual sumar las carreras.
-      * @param {string} debugLabel - Etiqueta para los mensajes de depuración.
-      * @returns {number} - El total de carreras para el equipo.
-      */
-     function sumarCarreras(registros, equipo, debugLabel = "Equipo") {
-        console.log(`[sumarCarreras - ${debugLabel}] Intentando sumar para equipo: '${equipo}' (Tipo: ${typeof equipo})`);
-        // Loguear una copia profunda para evitar problemas con objetos mutados o proxies
-        console.log(`[sumarCarreras - ${debugLabel}] Registros recibidos:`, JSON.parse(JSON.stringify(registros || [])));
-
-
-        if (!Array.isArray(registros)) {
-          console.warn(`[sumarCarreras - ${debugLabel}] La propiedad 'registros' no es un array o no está definida. Equipo: '${equipo}'. Se devolverá 0.`);
-          return 0;
-        }
-
-        if (typeof equipo !== 'string' || equipo.trim() === '') {
-            console.warn(`[sumarCarreras - ${debugLabel}] El nombre del 'equipo' no es un string válido o está vacío. Equipo recibido: '${equipo}'. Se devolverá 0.`);
-            return 0;
-        }
-        
-        const nombreEquipoNormalizado = equipo.trim().toLowerCase();
-        console.log(`[sumarCarreras - ${debugLabel}] Nombre de equipo normalizado para la búsqueda: '${nombreEquipoNormalizado}'`);
-
-        const registrosFiltrados = registros.filter(r => {
-            if (!r || typeof r !== 'object') {
-                console.log(`[sumarCarreras - ${debugLabel}] Registro inválido (no es objeto o es nulo), saltando.`);
-                return false;
-            }
-            if (typeof r.equipo !== 'string') {
-                console.log(`[sumarCarreras - ${debugLabel}] Registro con r.equipo no string:`, r);
-                return false;
-            }
-
-            const rEquipoNormalizado = r.equipo.trim().toLowerCase();
-            const coincideEquipo = rEquipoNormalizado === nombreEquipoNormalizado;
-            
-            console.log(`[sumarCarreras - ${debugLabel}] Comparando r.equipo normalizado ('${rEquipoNormalizado}') con equipo normalizado ('${nombreEquipoNormalizado}'). Coinciden: ${coincideEquipo}`);
-
-            const esValido = coincideEquipo && 
-                           r.jugada === 'A' && 
-                           typeof r.cantidad !== 'undefined';
-            
-            if (coincideEquipo && r.jugada !== 'A') {
-                console.log(`[sumarCarreras - ${debugLabel}] Registro para '${r.equipo}' pero jugada no es 'A': ${r.jugada}`, r);
-            }
-            if (coincideEquipo && r.jugada === 'A' && typeof r.cantidad === 'undefined') {
-                 console.log(`[sumarCarreras - ${debugLabel}] Registro para '${r.equipo}', jugada 'A', pero cantidad no definida:`, r);
-            }
-            return esValido;
-          });
-        
-        console.log(`[sumarCarreras - ${debugLabel}] Registros después de filtrar para '${equipo}' (normalizado '${nombreEquipoNormalizado}'):`, JSON.parse(JSON.stringify(registrosFiltrados)));
-
-        const totalCarreras = registrosFiltrados.reduce((sum, r) => {
-            const cantidadNum = parseInt(r.cantidad, 10);
-            console.log(`[sumarCarreras - ${debugLabel}] Sumando cantidad: ${r.cantidad} (parseado como ${cantidadNum})`);
-            return sum + (isNaN(cantidadNum) ? 0 : cantidadNum);
-          }, 0);
-        
-        console.log(`[sumarCarreras - ${debugLabel}] Total de carreras para '${equipo}': ${totalCarreras}`);
-        return totalCarreras;
-      }
+      renderHistorial();
     });
   </script>
 </body>

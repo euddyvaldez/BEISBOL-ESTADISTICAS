@@ -369,6 +369,20 @@
     let formatos = [];
     let codigoActual = 1;
 
+    // Formatos predeterminados del CSV
+    const formatosPredeterminados = [
+      {codigo: 1, descripcion: "INTERLIGA", cantidadInning: 3},
+      {codigo: 2, descripcion: "INTERLIGA", cantidadInning: 4},
+      {codigo: 3, descripcion: "INTERLIGA", cantidadInning: 5},
+      {codigo: 4, descripcion: "INTERLIGA", cantidadInning: 7},
+      {codigo: 5, descripcion: "FOGUEO", cantidadInning: 3},
+      {codigo: 6, descripcion: "FOGUEO", cantidadInning: 4},
+      {codigo: 7, descripcion: "FOGUEO", cantidadInning: 5},
+      {codigo: 8, descripcion: "FOGUEO", cantidadInning: 7},
+      {codigo: 9, descripcion: "TORNEO", cantidadInning: 5},
+      {codigo: 10, descripcion: "TORNEO", cantidadInning: 7}
+    ];
+
     function cargarTitulo() {
       const savedTitle = localStorage.getItem('mainAppTitle');
       if (savedTitle) {
@@ -386,7 +400,14 @@
       if (data) {
         formatos = JSON.parse(data);
         filtrarTabla(); 
+      } else {
+        // Si no hay datos en localStorage, cargar los formatos predeterminados
+        formatos = [...formatosPredeterminados];
+        codigoActual = 11; // El siguiente código después del último predeterminado
+        guardarEnLocalStorage();
+        filtrarTabla();
       }
+      
       const codigo = localStorage.getItem("formatoCodigoActual");
       if (codigo) {
         codigoActual = parseInt(codigo);
